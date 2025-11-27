@@ -34,6 +34,12 @@ export interface HistogramResponse {
     counts: number[];
 }
 
+export interface AnalysisResult {
+    original_image: string;
+    false_color_image: string;
+    stats: AnalysisStats;
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const uploadImage = async (file: File): Promise<UploadResponse> => {

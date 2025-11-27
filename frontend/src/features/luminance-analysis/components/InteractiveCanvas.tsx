@@ -178,7 +178,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
         setDragCurrent(getCoords(e));
     };
 
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = () => {
         if (!isDragging || !dragStart || !dragCurrent) return;
         setIsDragging(false);
 

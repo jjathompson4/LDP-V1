@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Monitor } from 'lucide-react';
+import { Monitor } from 'lucide-react';
 
 interface DisplayControlsProps {
     exposure: number;
