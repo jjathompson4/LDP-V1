@@ -34,7 +34,7 @@ export interface HistogramResponse {
     counts: number[];
 }
 
-const API_URL = 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const uploadImage = async (file: File): Promise<UploadResponse> => {
     const formData = new FormData();
