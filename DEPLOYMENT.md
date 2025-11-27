@@ -15,7 +15,17 @@ This repository includes a `render.yaml` file (Infrastructure as Code) that sets
     *   `ldp-frontend`: The React App.
 6.  Click **Apply**.
 
-Render will build and deploy both services. The frontend will automatically know the backend's URL.
+Render will create both services.
+
+### Important: Post-Deployment Configuration
+Because the Frontend is built separately, it needs to know the Backend's URL.
+1.  Wait for the **ldp-backend** service to finish deploying.
+2.  Copy its URL (e.g., `https://ldp-backend-xyz.onrender.com`).
+3.  Go to the **ldp-frontend** service in your Render dashboard.
+4.  Go to **Environment** -> **Add Environment Variable**.
+5.  Key: `VITE_API_URL`
+6.  Value: The URL you copied (no trailing slash).
+7.  Save changes. This will trigger a new build for the frontend.
 
 ## Option 2: Manual Deployment
 
