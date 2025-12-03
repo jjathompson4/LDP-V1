@@ -6,3 +6,5 @@ matplotlib
 pillow
 python-multipart
 pytest
+reportlab
+scipy

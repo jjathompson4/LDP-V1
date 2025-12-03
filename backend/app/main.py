@@ -10,11 +10,12 @@ from .processing import (
     pixel_luminance, roi_mean_luminance, luminance_histogram, build_colorbar
 )
 from .image_store import image_store
-from .routers import dashboard
+from .routers import dashboard, isoline
 
 app = FastAPI()
 
 app.include_router(dashboard.router)
+app.include_router(isoline.router)
 
 # Configure CORS
 app.add_middleware(

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Sun, Table2, Settings } from 'lucide-react';
+import { LayoutDashboard, Sun, Table2, Settings, CircleDotDashed } from 'lucide-react';
 import clsx from 'clsx';
 
 export const ShellLayout: React.FC = () => {
@@ -65,6 +65,21 @@ export const ShellLayout: React.FC = () => {
                     >
                         <Sun className="w-5 h-5" />
                         <span className="font-medium">Luminance Analysis</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/isoline-generator"
+                        className={({ isActive }) =>
+                            clsx(
+                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                isActive
+                                    ? "bg-cyan-500/10 text-cyan-400 shadow-sm border border-cyan-500/20"
+                                    : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                            )
+                        }
+                    >
+                        <CircleDotDashed className="w-5 h-5" />
+                        <span className="font-medium">Isoline Generator</span>
                     </NavLink>
                 </nav>
 
