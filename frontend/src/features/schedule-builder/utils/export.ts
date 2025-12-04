@@ -84,6 +84,34 @@ export const exportToXLSX = (
 
     XLSX.utils.book_append_sheet(wb, ws, 'Schedule');
 
-    // Trigger the file download
-    XLSX.writeFile(wb, `${fileName}.xlsx`);
+    // Generate Base64 string
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+
+    // Submit to proxy
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+    submitForm(`${API_URL}/download-proxy`, {
+        filename: `${fileName}.xlsx`,
+        content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        base64_data: wbout
+    });
+};
+
+const submitForm = (url: string, data: any) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = '_blank';
+
+    for (const key in data) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = data[key];
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
 };

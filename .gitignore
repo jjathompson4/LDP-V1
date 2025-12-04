@@ -36,3 +36,7 @@ backend/uploads/
 # Reference Repositories (Ignored)
 Ltg-Eqp-Schd-Bldr-V2/
 Luminance-Analysis/
+
+# Generated Test Files
+test_output.*
+test_grid.*

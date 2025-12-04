@@ -79,7 +79,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUpload, isProcess
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={handleClick}
-            className={`relative flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl cursor-pointer transition-colors duration-200 ${isDragging ? 'border-cyan-500 bg-slate-700' : 'border-slate-600 bg-slate-800 hover:border-slate-500'
+            className={`relative flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl cursor-pointer transition-colors duration-200 ${isDragging ? 'border-app-primary bg-app-surface-hover' : 'border-app-border bg-app-surface hover:border-app-text-muted'
                 } ${isProcessing ? 'cursor-not-allowed opacity-60' : ''}`}
         >
             <input
@@ -94,19 +94,19 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesUpload, isProcess
             <div className="flex flex-col items-center text-center">
                 {isProcessing ? (
                     <>
-                        <SpinnerIcon className="w-8 h-8 text-cyan-500 animate-spin" />
-                        <p className="mt-2 text-lg font-semibold text-slate-200">Processing...</p>
-                        <p className="text-sm text-slate-400">Please wait while we analyze your files.</p>
+                        <SpinnerIcon className="w-8 h-8 text-app-primary animate-spin" />
+                        <p className="mt-2 text-lg font-semibold text-app-text">Processing...</p>
+                        <p className="text-sm text-app-text-muted">Please wait while we analyze your files.</p>
                     </>
                 ) : (
                     <>
-                        <div className="w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center mb-4">
-                            <Upload className="w-8 h-8 text-slate-400" />
+                        <div className="w-16 h-16 rounded-full bg-app-surface-hover flex items-center justify-center mb-4">
+                            <Upload className="w-8 h-8 text-app-text-muted" />
                         </div>
-                        <p className="text-lg font-semibold text-slate-200">
-                            Drag & drop files here or <span className="text-cyan-500">browse</span>
+                        <p className="text-lg font-semibold text-app-text">
+                            Drag & drop files here or <span className="text-app-primary">browse</span>
                         </p>
-                        <p className="text-sm text-slate-400 mt-1">Supports multiple PDF and ZIP files</p>
+                        <p className="text-sm text-app-text-muted mt-1">Supports multiple PDF and ZIP files</p>
                     </>
                 )}
             </div>

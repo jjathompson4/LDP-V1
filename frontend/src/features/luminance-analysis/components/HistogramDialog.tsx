@@ -50,7 +50,7 @@ export const HistogramDialog: React.FC<HistogramDialogProps> = ({ isOpen, onClos
             {
                 label: 'Luminance Distribution',
                 data: counts,
-                borderColor: 'rgb(56, 189, 248)', // cyan-400
+                borderColor: 'rgb(56, 189, 248)', // cyan-400 - keeping this as chart color for now, could be dynamic
                 backgroundColor: 'rgba(56, 189, 248, 0.2)',
                 fill: true,
                 tension: 0.3,
@@ -93,12 +93,12 @@ export const HistogramDialog: React.FC<HistogramDialogProps> = ({ isOpen, onClos
     return (
         <dialog
             ref={dialogRef}
-            className="bg-slate-900 text-slate-200 rounded-xl shadow-2xl border border-slate-700 p-0 backdrop:bg-black/50 w-[90vw] max-w-3xl"
+            className="bg-app-surface text-app-text rounded-xl shadow-2xl border border-app-border p-0 backdrop:bg-black/50 w-[90vw] max-w-3xl"
             onClose={onClose}
         >
-            <div className="flex items-center justify-between p-4 border-b border-slate-700">
+            <div className="flex items-center justify-between p-4 border-b border-app-border">
                 <h2 className="text-lg font-semibold">Luminance Histogram</h2>
-                <button onClick={onClose} className="p-1 hover:bg-slate-800 rounded-lg transition-colors">
+                <button onClick={onClose} className="p-1 hover:bg-app-surface-hover rounded-lg transition-colors">
                     <X className="w-5 h-5" />
                 </button>
             </div>

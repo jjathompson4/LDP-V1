@@ -203,7 +203,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-center justify-center bg-neutral-950 overflow-hidden rounded-lg border border-neutral-800"
+            className="relative w-full h-full flex items-center justify-center bg-app-bg overflow-hidden rounded-lg border border-app-border"
         >
             <img
                 src={imageSrc}

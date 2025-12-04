@@ -119,19 +119,19 @@ const EditableDropdownCell: React.FC<{
                 </button>
             )}
             {isOpen && (
-                <ul className="absolute z-50 w-44 bg-slate-800 border border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto top-8 right-1">
+                <ul className="absolute z-50 w-44 bg-app-surface border border-app-border rounded-md shadow-lg max-h-60 overflow-y-auto top-8 right-1">
                     {options.map((option, index) => (
                         <li
                             key={index}
                             onClick={() => handleOptionClick(option)}
-                            className="px-3 py-2 text-sm text-slate-200 cursor-pointer hover:bg-slate-700"
+                            className="px-3 py-2 text-sm text-app-text cursor-pointer hover:bg-app-surface-hover"
                         >
                             {option}
                         </li>
                     ))}
                     <li
                         onClick={() => handleOptionClick('custom')}
-                        className="px-3 py-2 text-sm text-cyan-400 cursor-pointer hover:bg-slate-700 border-t border-slate-600"
+                        className="px-3 py-2 text-sm text-app-primary cursor-pointer hover:bg-app-surface-hover border-t border-app-border"
                     >
                         Custom...
                     </li>
@@ -326,7 +326,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     };
 
     return (
-        <div ref={tableContainerRef} className="relative overflow-x-auto bg-slate-800 rounded-2xl shadow-lg border border-slate-700">
+        <div ref={tableContainerRef} className="relative overflow-x-auto bg-app-surface rounded-2xl shadow-lg border border-app-border">
             <BulkEditToolbar
                 selectedCells={selectedCells}
                 fixtures={fixtures}
@@ -342,17 +342,17 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 className="hidden"
                 data-fixture-id=""
             />
-            <table ref={tableRef} className="w-full text-sm text-left text-slate-400" style={{ tableLayout: 'fixed' }}>
+            <table ref={tableRef} className="w-full text-sm text-left text-app-text-muted" style={{ tableLayout: 'fixed' }}>
                 <colgroup>
                     {columns.map(header => (
                         <col key={header.key} style={{ width: columnWidths[header.key] ? `${columnWidths[header.key]}px` : undefined }} />
                     ))}
                     <col style={{ width: columnWidths['actions'] ? `${columnWidths['actions']}px` : undefined }} />
                 </colgroup>
-                <thead className="text-xs text-slate-300 uppercase bg-slate-700/50">
+                <thead className="text-xs text-app-text uppercase bg-app-surface-hover">
                     <tr>
                         {columns.map(header => (
-                            <th key={header.key} scope="col" data-key={header.key} className="relative px-4 py-3 border-r border-slate-600">
+                            <th key={header.key} scope="col" data-key={header.key} className="relative px-4 py-3 border-r border-app-border">
                                 <div className="flex items-center">
                                     <span>{header.label}</span>
                                     <div
@@ -360,7 +360,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                         title={`Resize ${header.label} column`}
                                         className="absolute top-0 right-[-8px] h-full w-4 cursor-col-resize z-10 group"
                                     >
-                                        <div className="w-px h-full bg-transparent group-hover:bg-cyan-400 transition-colors mx-auto"></div>
+                                        <div className="w-px h-full bg-transparent group-hover:bg-app-primary transition-colors mx-auto"></div>
                                     </div>
                                 </div>
                             </th>
@@ -373,7 +373,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                     title="Resize Actions column"
                                     className="absolute top-0 right-[-8px] h-full w-4 cursor-col-resize z-10 group"
                                 >
-                                    <div className="w-px h-full bg-transparent group-hover:bg-cyan-400 transition-colors mx-auto"></div>
+                                    <div className="w-px h-full bg-transparent group-hover:bg-app-primary transition-colors mx-auto"></div>
                                 </div>
                             </div>
                         </th>
@@ -386,7 +386,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                             return (
                                 <tr
                                     key={fixtureId}
-                                    className="bg-slate-800 border-b border-slate-700 hover:bg-slate-700/50"
+                                    className="bg-app-surface border-b border-app-border hover:bg-app-surface-hover"
                                 >
                                     {columns.map((header, colIndex) => {
                                         const field = header.key;
@@ -397,7 +397,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                         return (
                                             <td
                                                 key={field}
-                                                className={`relative p-0 border-r border-slate-700 align-top ${isSelected ? 'bg-cyan-900/40 ring-1 ring-cyan-500 z-[5]' : ''}`}
+                                                className={`relative p-0 border-r border-app-border align-top ${isSelected ? 'bg-app-primary-soft ring-1 ring-app-primary z-[5]' : ''}`}
                                                 onMouseDown={(e) => handleCellMouseDown(e, fixtureId, String(field), rowIndex, colIndex)}
                                                 data-cell-id={`${fixtureId}-${field}`}
                                                 style={{
@@ -422,7 +422,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                                     title="Resize row"
                                                     className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
                                                 >
-                                                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-cyan-400 transition-colors"></div>
+                                                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
                                                 </div>
                                             </td>
                                         );
@@ -437,14 +437,14 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                         <div className="flex items-center justify-end w-full gap-1">
                                             <button
                                                 onClick={() => handleReanalyzeClick(fixture.id)}
-                                                className="p-1.5 rounded-md text-slate-400 hover:text-cyan-400 hover:bg-slate-700/50 transition-colors"
+                                                className="p-1.5 rounded-md text-app-text-muted hover:text-app-primary hover:bg-app-surface-hover transition-colors"
                                                 title="Re-analyze with a new PDF"
                                             >
                                                 <RefreshCw className="w-5 h-5" />
                                             </button>
                                             <button
                                                 onClick={() => deleteFixture(fixture.id)}
-                                                className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-slate-700/50 transition-colors"
+                                                className="p-1.5 rounded-md text-app-text-muted hover:text-app-error hover:bg-app-surface-hover transition-colors"
                                                 title="Delete Fixture"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -455,7 +455,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                             title="Resize row"
                                             className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
                                         >
-                                            <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-cyan-400 transition-colors"></div>
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
                                         </div>
                                     </td>
                                 </tr>
@@ -463,11 +463,11 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         })
                     ) : (
                         <tr>
-                            <td colSpan={columns.length + 1} className="p-4 border-b border-slate-700">
-                                <div className="text-center py-12 px-6 bg-slate-800/50 rounded-lg border-2 border-dashed border-slate-700">
-                                    <Table className="w-12 h-12 mx-auto text-slate-500" />
-                                    <h3 className="mt-4 text-xl font-semibold text-slate-300">No Fixtures Yet</h3>
-                                    <p className="mt-1 text-slate-400">Upload product data sheets to begin building your schedule.</p>
+                            <td colSpan={columns.length + 1} className="p-4 border-b border-app-border">
+                                <div className="text-center py-12 px-6 bg-app-surface-hover rounded-lg border-2 border-dashed border-app-border">
+                                    <Table className="w-12 h-12 mx-auto text-app-text-muted" />
+                                    <h3 className="mt-4 text-xl font-semibold text-app-text">No Fixtures Yet</h3>
+                                    <p className="mt-1 text-app-text-muted">Upload product data sheets to begin building your schedule.</p>
                                 </div>
                             </td>
                         </tr>

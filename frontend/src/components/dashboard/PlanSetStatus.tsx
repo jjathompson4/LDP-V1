@@ -51,22 +51,22 @@ export const PlanSetStatusComponent: React.FC<PlanSetStatusProps> = ({ status, o
             <>
                 <div className="flex-1 flex flex-col justify-center gap-4 p-4">
                     <div>
-                        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Current Posted Set</div>
-                        <div className="font-medium text-slate-200">{status.currentPlanSetName}</div>
-                        <div className="text-sm text-slate-400">
+                        <div className="text-xs text-app-text-muted uppercase tracking-wider mb-1">Current Posted Set</div>
+                        <div className="font-medium text-app-text">{status.currentPlanSetName}</div>
+                        <div className="text-sm text-app-text-muted">
                             {new Date(status.currentPlanSetDate).toLocaleDateString()}
                         </div>
                     </div>
 
                     {status.lastModelExportDate && (
-                        <div className={`p-3 rounded border ${isOutdated ? 'bg-yellow-900/20 border-yellow-800/50' : 'bg-green-900/20 border-green-800/50'}`}>
+                        <div className={`p-3 rounded border ${isOutdated ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-app-success/10 border-app-success/20'}`}>
                             <div className="flex items-start gap-2">
                                 <span className="text-lg">{isOutdated ? '⚠️' : '✓'}</span>
                                 <div>
-                                    <div className={`text-sm font-bold ${isOutdated ? 'text-yellow-300' : 'text-green-300'}`}>
+                                    <div className={`text-sm font-bold ${isOutdated ? 'text-yellow-500' : 'text-app-success'}`}>
                                         {isOutdated ? 'Newer model detected' : 'Up to date'}
                                     </div>
-                                    <div className="text-xs text-slate-400 mt-1">
+                                    <div className="text-xs text-app-text-muted mt-1">
                                         Last export: {new Date(status.lastModelExportDate).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -84,47 +84,47 @@ export const PlanSetStatusComponent: React.FC<PlanSetStatusProps> = ({ status, o
 
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-800 rounded-lg shadow-xl border border-slate-700 w-full max-w-sm overflow-hidden">
-                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-100">Update Plan Set</h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+                    <div className="bg-app-surface rounded-lg shadow-xl border border-app-border w-full max-w-sm overflow-hidden">
+                        <div className="p-4 border-b border-app-border flex justify-between items-center">
+                            <h3 className="font-bold text-app-text">Update Plan Set</h3>
+                            <button onClick={onClose} className="text-app-text-muted hover:text-app-text">
                                 <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Set Name</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Set Name</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.currentPlanSetName}
                                     onChange={e => setFormData({ ...formData, currentPlanSetName: e.target.value })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                     placeholder="e.g. 50% DD Submission"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Date</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Date</label>
                                 <input
                                     type="date"
                                     required
                                     value={formData.currentPlanSetDate}
                                     onChange={e => setFormData({ ...formData, currentPlanSetDate: e.target.value })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                                    className="px-4 py-2 text-sm text-app-text-muted hover:text-app-text"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
+                                    className="px-4 py-2 text-sm bg-app-primary hover:bg-app-primary-hover text-white rounded font-medium disabled:opacity-50"
                                 >
                                     {loading ? 'Updating...' : 'Update Status'}
                                 </button>

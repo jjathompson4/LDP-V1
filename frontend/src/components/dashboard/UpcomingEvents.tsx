@@ -56,24 +56,24 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, onAdd, i
         <>
             <div className="p-0 overflow-y-auto flex-1 max-h-[400px]">
                 {events.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500 italic">No upcoming events.</div>
+                    <div className="p-8 text-center text-app-text-muted italic">No upcoming events.</div>
                 ) : (
-                    <div className="divide-y divide-slate-700/50">
+                    <div className="divide-y divide-app-border">
                         {events.map(event => (
-                            <div key={event.id} className="p-4 hover:bg-slate-700/30 transition-colors">
+                            <div key={event.id} className="p-4 hover:bg-app-surface-hover transition-colors">
                                 <div className="flex gap-3">
-                                    <div className="flex-shrink-0 w-10 h-10 bg-slate-700 rounded flex items-center justify-center text-xl">
+                                    <div className="flex-shrink-0 w-10 h-10 bg-app-surface-hover rounded flex items-center justify-center text-xl">
                                         {getTypeIcon(event.type)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="font-medium text-slate-200 truncate">{event.title}</div>
-                                        <div className="text-sm text-slate-400">
+                                        <div className="font-medium text-app-text truncate">{event.title}</div>
+                                        <div className="text-sm text-app-text-muted">
                                             {new Date(event.startDateTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                             {' • '}
                                             {new Date(event.startDateTime).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                                         </div>
                                         {event.location && (
-                                            <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                            <div className="text-xs text-app-text-muted mt-1 flex items-center gap-1">
                                                 📍 {event.location}
                                             </div>
                                         )}
@@ -87,32 +87,32 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, onAdd, i
 
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-800 rounded-lg shadow-xl border border-slate-700 w-full max-w-md overflow-hidden">
-                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-100">Add New Event</h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+                    <div className="bg-app-surface rounded-lg shadow-xl border border-app-border w-full max-w-md overflow-hidden">
+                        <div className="p-4 border-b border-app-border flex justify-between items-center">
+                            <h3 className="font-bold text-app-text">Add New Event</h3>
+                            <button onClick={onClose} className="text-app-text-muted hover:text-app-text">
                                 <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Event Title</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Event Title</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.title}
                                     onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                     placeholder="e.g. Client Presentation"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Type</label>
+                                    <label className="block text-xs font-medium text-app-text-muted mb-1">Type</label>
                                     <select
                                         value={formData.type}
                                         onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                     >
                                         <option value="Meeting">Meeting</option>
                                         <option value="Deadline">Deadline</option>
@@ -120,35 +120,35 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, onAdd, i
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Location</label>
+                                    <label className="block text-xs font-medium text-app-text-muted mb-1">Location</label>
                                     <input
                                         type="text"
                                         value={formData.location}
                                         onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                         placeholder="Optional"
                                     />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Date</label>
+                                    <label className="block text-xs font-medium text-app-text-muted mb-1">Date</label>
                                     <input
                                         type="date"
                                         required
                                         value={formData.date}
                                         onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Time</label>
+                                    <label className="block text-xs font-medium text-app-text-muted mb-1">Time</label>
                                     <input
                                         type="time"
                                         required
                                         value={formData.time}
                                         onChange={e => setFormData({ ...formData, time: e.target.value })}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                     />
                                 </div>
                             </div>
@@ -156,14 +156,14 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, onAdd, i
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                                    className="px-4 py-2 text-sm text-app-text-muted hover:text-app-text"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
+                                    className="px-4 py-2 text-sm bg-app-primary hover:bg-app-primary-hover text-white rounded font-medium disabled:opacity-50"
                                 >
                                     {loading ? 'Adding...' : 'Add Event'}
                                 </button>

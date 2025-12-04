@@ -70,7 +70,7 @@ export const BulkEditToolbar: React.FC<BulkEditToolbarProps> = ({ selectedCells,
     return (
         <div
             ref={toolbarRef}
-            className="absolute z-20 bg-slate-700 p-2 rounded-lg shadow-2xl border border-slate-600 flex items-center gap-2"
+            className="absolute z-20 bg-app-surface p-2 rounded-lg shadow-2xl border border-app-border flex items-center gap-2"
             style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
             <input
@@ -80,17 +80,17 @@ export const BulkEditToolbar: React.FC<BulkEditToolbarProps> = ({ selectedCells,
                 onKeyDown={handleKeyDown}
                 autoFocus
                 placeholder="Enter bulk value..."
-                className="bg-slate-800 border border-slate-600 rounded-md px-3 py-1.5 text-slate-100 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                className="bg-app-bg border border-app-border rounded-md px-3 py-1.5 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
             />
             <button
                 onClick={handleApply}
-                className="bg-cyan-600 text-white font-semibold py-1.5 px-4 rounded-md hover:bg-cyan-700 transition-colors"
+                className="bg-app-primary text-white font-semibold py-1.5 px-4 rounded-md hover:bg-app-primary-hover transition-colors"
             >
                 Apply
             </button>
             <button
                 onClick={onClear}
-                className="p-1.5 rounded-full text-slate-400 hover:text-slate-100 hover:bg-slate-600 transition-colors"
+                className="p-1.5 rounded-full text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors"
                 title="Cancel (Esc)"
             >
                 <X className="w-4 h-4" />

@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { LayoutDashboard } from 'lucide-react';
 import {
     getProjects,
     getDashboardSummary,
@@ -175,7 +176,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('tasks', dir)}
                         headerAction={
                             <button
-                                className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded transition-colors"
+                                className="text-xs bg-app-surface-hover hover:bg-app-border text-app-text px-2 py-1 rounded transition-colors border border-app-border"
                                 onClick={() => setActiveModal('task')}
                             >
                                 + Add Task
@@ -198,7 +199,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('events', dir)}
                         headerAction={
                             <button
-                                className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded transition-colors"
+                                className="text-xs bg-app-surface-hover hover:bg-app-border text-app-text px-2 py-1 rounded transition-colors border border-app-border"
                                 onClick={() => setActiveModal('event')}
                             >
                                 + Add Event
@@ -227,7 +228,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('budget', dir)}
                         headerAction={
                             <button
-                                className="text-xs text-slate-400 hover:text-slate-200"
+                                className="text-xs text-app-text-muted hover:text-app-text"
                                 onClick={() => setActiveModal('budget')}
                             >
                                 Edit
@@ -250,7 +251,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('plans', dir)}
                         headerAction={
                             <button
-                                className="text-xs text-slate-400 hover:text-slate-200"
+                                className="text-xs text-app-text-muted hover:text-app-text"
                                 onClick={() => setActiveModal('plans')}
                             >
                                 Update
@@ -278,20 +279,20 @@ const Dashboard: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen text-slate-100 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="min-h-screen text-app-text flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-app-primary"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen text-slate-100 flex flex-col items-center justify-center p-4">
-                <div className="text-red-400 text-xl mb-4">Error loading dashboard</div>
-                <div className="text-slate-400 mb-6">{error}</div>
+            <div className="min-h-screen text-app-text flex flex-col items-center justify-center p-4">
+                <div className="text-app-error text-xl mb-4">Error loading dashboard</div>
+                <div className="text-app-text-muted mb-6">{error}</div>
                 <button
                     onClick={() => window.location.reload()}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors"
+                    className="bg-app-primary hover:bg-app-primary-hover text-white px-4 py-2 rounded transition-colors"
                 >
                     Retry
                 </button>
@@ -302,34 +303,44 @@ const Dashboard: React.FC = () => {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
 
     return (
-        <div className="p-4 md:p-8 text-slate-100">
-            <div className="max-w-[1800px] mx-auto space-y-6">
-                {selectedProject && (
-                    <ProjectHeader
-                        project={selectedProject}
-                        projects={projects}
-                        onProjectChange={handleProjectChange}
-                    />
-                )}
-
-                {summary && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
-                        {/* Left Column */}
-                        <div className="flex flex-col gap-6">
-                            {layout.left.map(renderWidget)}
-                        </div>
-
-                        {/* Center Column */}
-                        <div className="flex flex-col gap-6">
-                            {layout.center.map(renderWidget)}
-                        </div>
-
-                        {/* Right Column */}
-                        <div className="flex flex-col gap-6">
-                            {layout.right.map(renderWidget)}
-                        </div>
+        <div className="flex flex-col h-full bg-app-bg text-app-text">
+            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6 shrink-0 z-10">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                        <LayoutDashboard className="w-5 h-5 text-white" />
                     </div>
-                )}
+                    <h1 className="text-xl font-bold text-app-text tracking-tight">Dashboard</h1>
+                </div>
+            </header>
+            <div className="p-4 md:p-8 overflow-auto flex-1">
+                <div className="max-w-[1800px] mx-auto space-y-6">
+                    {selectedProject && (
+                        <ProjectHeader
+                            project={selectedProject}
+                            projects={projects}
+                            onProjectChange={handleProjectChange}
+                        />
+                    )}
+
+                    {summary && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                            {/* Left Column */}
+                            <div className="flex flex-col gap-6">
+                                {layout.left.map(renderWidget)}
+                            </div>
+
+                            {/* Center Column */}
+                            <div className="flex flex-col gap-6">
+                                {layout.center.map(renderWidget)}
+                            </div>
+
+                            {/* Right Column */}
+                            <div className="flex flex-col gap-6">
+                                {layout.right.map(renderWidget)}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

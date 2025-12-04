@@ -1,19 +1,20 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Sun, Table2, Settings, CircleDotDashed } from 'lucide-react';
+import { LayoutDashboard, Sun, Table2, Settings, CircleDotDashed, Lightbulb } from 'lucide-react';
 import clsx from 'clsx';
+import ThemeToggle from '../components/ThemeToggle';
 
 export const ShellLayout: React.FC = () => {
     return (
-        <div className="flex h-screen bg-neutral-900 text-neutral-100 font-sans overflow-hidden">
+        <div className="flex h-screen bg-app-bg text-app-text font-sans overflow-hidden transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-neutral-800 bg-neutral-900/50 flex flex-col">
-                <div className="p-6 border-b border-neutral-800">
+            <aside className="w-64 border-r border-app-border bg-app-surface/50 flex flex-col backdrop-blur-sm">
+                <div className="p-6 border-b border-app-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                            <LayoutDashboard className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                            <Lightbulb className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="font-bold text-lg tracking-tight">LDP <span className="text-neutral-500 font-normal">v1.0</span></h1>
+                        <h1 className="font-bold text-lg tracking-tight text-app-text">LDP <span className="text-app-text-muted font-normal">v1.0</span></h1>
                     </div>
                 </div>
 
@@ -24,8 +25,8 @@ export const ShellLayout: React.FC = () => {
                             clsx(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
-                                    ? "bg-cyan-500/10 text-cyan-400 shadow-sm border border-cyan-500/20"
-                                    : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                                    ? "bg-app-primary-soft text-app-primary shadow-sm border border-app-primary/20"
+                                    : "text-app-text-muted hover:bg-app-surface-hover hover:text-app-text"
                             )
                         }
                     >
@@ -33,7 +34,7 @@ export const ShellLayout: React.FC = () => {
                         <span className="font-medium">Dashboard</span>
                     </NavLink>
 
-                    <div className="pt-4 pb-2 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                    <div className="pt-4 pb-2 px-4 text-xs font-semibold text-app-text-muted uppercase tracking-wider">
                         Tools
                     </div>
 
@@ -43,8 +44,8 @@ export const ShellLayout: React.FC = () => {
                             clsx(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
-                                    ? "bg-cyan-500/10 text-cyan-400 shadow-sm border border-cyan-500/20"
-                                    : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                                    ? "bg-app-primary-soft text-app-primary shadow-sm border border-app-primary/20"
+                                    : "text-app-text-muted hover:bg-app-surface-hover hover:text-app-text"
                             )
                         }
                     >
@@ -58,8 +59,8 @@ export const ShellLayout: React.FC = () => {
                             clsx(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
-                                    ? "bg-cyan-500/10 text-cyan-400 shadow-sm border border-cyan-500/20"
-                                    : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                                    ? "bg-app-primary-soft text-app-primary shadow-sm border border-app-primary/20"
+                                    : "text-app-text-muted hover:bg-app-surface-hover hover:text-app-text"
                             )
                         }
                     >
@@ -73,8 +74,8 @@ export const ShellLayout: React.FC = () => {
                             clsx(
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
-                                    ? "bg-cyan-500/10 text-cyan-400 shadow-sm border border-cyan-500/20"
-                                    : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200"
+                                    ? "bg-app-primary-soft text-app-primary shadow-sm border border-app-primary/20"
+                                    : "text-app-text-muted hover:bg-app-surface-hover hover:text-app-text"
                             )
                         }
                     >
@@ -83,17 +84,18 @@ export const ShellLayout: React.FC = () => {
                     </NavLink>
                 </nav>
 
-                <div className="p-4 border-t border-neutral-800">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200 transition-all duration-200">
+                <div className="p-4 border-t border-app-border flex items-center justify-between gap-2">
+                    <button className="flex items-center gap-3 px-4 py-3 flex-1 rounded-xl text-app-text-muted hover:bg-app-surface-hover hover:text-app-text transition-all duration-200 text-left">
                         <Settings className="w-5 h-5" />
                         <span className="font-medium">Settings</span>
                     </button>
+                    <ThemeToggle />
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto bg-neutral-950 relative">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-neutral-950 pointer-events-none" />
+            <main className="flex-1 overflow-auto bg-app-bg relative">
+                {/* Optional: Add a subtle gradient overlay if desired, but keeping it clean for now or using theme tokens */}
                 <div className="relative z-10 min-h-full">
                     <Outlet />
                 </div>
@@ -101,3 +103,4 @@ export const ShellLayout: React.FC = () => {
         </div>
     );
 };
+

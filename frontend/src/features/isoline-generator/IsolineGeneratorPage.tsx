@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CircleDotDashed } from 'lucide-react';
 import InputPanel from './components/InputPanel';
 import PreviewPanel from './components/PreviewPanel';
 import InstructionsPanel from './components/InstructionsPanel';
@@ -18,7 +19,7 @@ const IsolineGeneratorPage: React.FC = () => {
     const [includeScaleBar, setIncludeScaleBar] = useState(true);
     const [includeLabels, setIncludeLabels] = useState(true);
     const [includeDisclaimer, setIncludeDisclaimer] = useState(true);
-    const [includeGrid, setIncludeGrid] = useState(false);
+    const [includeGrid, setIncludeGrid] = useState(true);
 
     const handleGenerate = async (file: File, params: ComputeRequest) => {
         setIsGenerating(true);
@@ -54,14 +55,7 @@ const IsolineGeneratorPage: React.FC = () => {
                 includeGrid,
                 gridSpacing: includeGrid ? gridSize : undefined
             };
-            const blob = await isolineService.exportPdf(computeData, finalOptions);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'isolines.pdf');
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            await isolineService.exportPdf(computeData, finalOptions);
         } catch (err) {
             console.error(err);
             alert('Failed to export PDF.');
@@ -83,14 +77,7 @@ const IsolineGeneratorPage: React.FC = () => {
                 includeGrid,
                 gridSpacing: includeGrid ? gridSize : undefined
             };
-            const blob = await isolineService.exportPng(computeData, finalOptions);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'isolines.png');
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            await isolineService.exportPng(computeData, finalOptions);
         } catch (err) {
             console.error(err);
             alert('Failed to export PNG.');
@@ -100,10 +87,16 @@ const IsolineGeneratorPage: React.FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col bg-neutral-950 overflow-hidden">
-            <header className="bg-neutral-900 border-b border-neutral-800 px-6 py-4">
-                <h1 className="text-2xl font-bold text-neutral-100">Isoline Generator</h1>
-                <p className="text-sm text-neutral-400">Generate direct-only illuminance contours for site lighting overlays.</p>
+        <div className="h-full flex flex-col bg-app-bg overflow-hidden">
+            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                        <CircleDotDashed className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-app-text">Isoline Generator</h1>
+                    </div>
+                </div>
             </header>
 
             <div className="flex-1 flex overflow-hidden p-6 gap-6">

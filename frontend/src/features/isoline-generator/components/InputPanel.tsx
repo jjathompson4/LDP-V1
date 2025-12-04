@@ -29,9 +29,9 @@ const InputPanel: React.FC<InputPanelProps> = ({
     const [detailLevel, setDetailLevel] = useState<'low' | 'medium' | 'high'>('medium');
     const [illuminanceUnits, setIlluminanceUnits] = useState<'fc' | 'lux'>('fc');
     const [isoLevels, setIsoLevels] = useState<IsolineLevel[]>([
-        { value: 0.1, color: '#ff0000' },
+        { value: 0.1, color: '#0000ff' },
         { value: 0.5, color: '#00ff00' },
-        { value: 1.0, color: '#0000ff' },
+        { value: 1.0, color: '#ff0000' },
     ]);
     const [error, setError] = useState<string | null>(null);
 
@@ -109,11 +109,11 @@ const InputPanel: React.FC<InputPanelProps> = ({
     };
 
     return (
-        <div className="flex flex-col gap-4 p-4 bg-neutral-900 rounded-lg shadow-sm border border-neutral-800 h-full overflow-y-auto">
-            <h2 className="text-lg font-semibold text-neutral-100">Input Parameters</h2>
+        <div className="flex flex-col gap-4 p-4 bg-app-surface rounded-lg shadow-sm border border-app-border h-full overflow-y-auto">
+            <h2 className="text-lg font-semibold text-app-text">Input Parameters</h2>
 
             {/* Photometric File */}
-            <div className="p-4 border border-dashed border-neutral-700 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
+            <div className="p-4 border border-dashed border-app-border rounded-lg bg-app-surface-hover/50 hover:bg-app-surface-hover transition-colors"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}>
                 <div className="flex flex-col items-center justify-center gap-2">
@@ -126,11 +126,11 @@ const InputPanel: React.FC<InputPanelProps> = ({
                     />
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-4 py-2 text-sm font-medium text-cyan-400 bg-cyan-900/20 rounded-md hover:bg-cyan-900/30 border border-cyan-900/50"
+                        className="px-4 py-2 text-sm font-medium text-app-primary bg-app-primary-soft rounded-md hover:bg-app-primary-soft/80 border border-app-primary/20"
                     >
                         {file ? 'Change File' : 'Upload IES File'}
                     </button>
-                    <span className="text-sm text-neutral-400">
+                    <span className="text-sm text-app-text-muted">
                         {file ? file.name : 'Drag & drop or click to upload'}
                     </span>
                 </div>
@@ -138,45 +138,45 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
             {/* Mounting & Calc Plane */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-neutral-300">Mounting & Geometry</h3>
+                <h3 className="text-sm font-medium text-app-text">Mounting & Geometry</h3>
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">Units</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Units</label>
                         <select
                             value={units}
                             onChange={(e) => setUnits(e.target.value as 'ft' | 'm')}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         >
                             <option value="ft">Feet</option>
                             <option value="m">Meters</option>
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">Mounting Height</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Mounting Height</label>
                         <input
                             type="number"
                             value={mh}
                             onChange={(e) => setMh(parseFloat(e.target.value))}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">Calc Plane Z</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Calc Plane Z</label>
                         <input
                             type="number"
                             value={calcPlane}
                             onChange={(e) => setCalcPlane(parseFloat(e.target.value))}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">LLF</label>
+                        <label className="block text-xs text-app-text-muted mb-1">LLF</label>
                         <input
                             type="number"
                             step="0.01"
                             value={llf}
                             onChange={(e) => setLlf(parseFloat(e.target.value))}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                             title="Light Loss Factor"
                         />
                     </div>
@@ -185,28 +185,28 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
             {/* Grid Settings */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-neutral-300">Grid Settings</h3>
+                <h3 className="text-sm font-medium text-app-text">Available Drawing Space</h3>
                 <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Radius (x MH)</label>
+                    <label className="block text-xs text-app-text-muted mb-1">(Enter Drawing Space Radius) x MH</label>
                     <input
                         type="number"
                         value={radiusFactor}
                         onChange={(e) => setRadiusFactor(parseFloat(e.target.value))}
-                        className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                        className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Detail Level</label>
+                    <label className="block text-xs text-app-text-muted mb-1">Detail Level</label>
                     <div className="flex gap-2">
                         {['low', 'medium', 'high'].map((level) => (
-                            <label key={level} className="flex items-center gap-1 text-xs cursor-pointer text-neutral-300">
+                            <label key={level} className="flex items-center gap-1 text-xs cursor-pointer text-app-text">
                                 <input
                                     type="radio"
                                     name="detailLevel"
                                     value={level}
                                     checked={detailLevel === level}
                                     onChange={(e) => setDetailLevel(e.target.value as any)}
-                                    className="text-cyan-500 focus:ring-cyan-500 bg-neutral-800 border-neutral-600"
+                                    className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
                                 />
                                 {level.charAt(0).toUpperCase() + level.slice(1)}
                             </label>
@@ -217,23 +217,23 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
             {/* Scale Bar & Grid Overlay */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-neutral-300">Scale Bar & Grid</h3>
+                <h3 className="text-sm font-medium text-app-text">Scale Bar & Grid</h3>
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">Length ({currentUnits})</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Length ({currentUnits})</label>
                         <input
                             type="number"
                             value={scaleBarLength}
                             onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-neutral-500 mb-1">Grid Spacing</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Grid Spacing</label>
                         <select
                             value={gridSize || ''}
                             onChange={(e) => setGridSize(e.target.value ? parseFloat(e.target.value) : null)}
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         >
                             <option value="">None</option>
                             <option value="1">1x1 {currentUnits}</option>
@@ -246,27 +246,27 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
             {/* Photometric Output */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-neutral-300">Output Units</h3>
+                <h3 className="text-sm font-medium text-app-text">Output Units</h3>
                 <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-neutral-300">
+                    <label className="flex items-center gap-2 text-sm text-app-text">
                         <input
                             type="radio"
                             name="illUnits"
                             value="fc"
                             checked={illuminanceUnits === 'fc'}
                             onChange={() => setIlluminanceUnits('fc')}
-                            className="text-cyan-500 focus:ring-cyan-500 bg-neutral-800 border-neutral-600"
+                            className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
                         />
                         Footcandles (fc)
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-neutral-300">
+                    <label className="flex items-center gap-2 text-sm text-app-text">
                         <input
                             type="radio"
                             name="illUnits"
                             value="lux"
                             checked={illuminanceUnits === 'lux'}
                             onChange={() => setIlluminanceUnits('lux')}
-                            className="text-cyan-500 focus:ring-cyan-500 bg-neutral-800 border-neutral-600"
+                            className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
                         />
                         Lux
                     </label>
@@ -276,11 +276,11 @@ const InputPanel: React.FC<InputPanelProps> = ({
             {/* Isoline Configuration */}
             <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-neutral-300">Isolines (Max 5)</h3>
+                    <h3 className="text-sm font-medium text-app-text">Isolines (Max 5)</h3>
                     <button
                         onClick={addIsoLevel}
                         disabled={isoLevels.length >= 5}
-                        className="text-xs text-cyan-400 hover:text-cyan-300 disabled:text-neutral-600"
+                        className="text-xs text-app-primary hover:text-app-primary-hover disabled:text-app-text-muted"
                     >
                         + Add
                     </button>
@@ -293,7 +293,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
                                 step="0.1"
                                 value={level.value}
                                 onChange={(e) => updateIsoLevel(idx, 'value', parseFloat(e.target.value))}
-                                className="w-20 bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm p-1 focus:ring-cyan-500 focus:border-cyan-500"
+                                className="w-20 bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm p-1 focus:ring-app-primary focus:border-app-primary"
                                 placeholder="Value"
                             />
                             <input
@@ -304,7 +304,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
                             />
                             <button
                                 onClick={() => removeIsoLevel(idx)}
-                                className="text-neutral-500 hover:text-red-400"
+                                className="text-app-text-muted hover:text-app-accent"
                             >
                                 &times;
                             </button>
@@ -315,7 +315,7 @@ const InputPanel: React.FC<InputPanelProps> = ({
 
             {/* Error Message */}
             {error && (
-                <div className="p-3 text-sm text-red-200 bg-red-900/20 rounded-md border border-red-900/50">
+                <div className="p-3 text-sm text-app-error bg-app-error/10 rounded-md border border-app-error/20">
                     {error}
                 </div>
             )}
@@ -324,13 +324,13 @@ const InputPanel: React.FC<InputPanelProps> = ({
             <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !file}
-                className="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-cyan-400 border border-neutral-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-2 bg-app-surface hover:bg-app-surface-hover text-app-primary border border-app-border rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isGenerating ? 'Generating...' : 'Generate Isolines'}
             </button>
 
             {/* Disclaimer */}
-            <div className="text-xs text-neutral-500 italic mt-2">
+            <div className="text-xs text-app-text-muted italic mt-2">
                 For preliminary layout and visual reference only; use full AGi32/Lighting design calculations for final documentation and compliance.
             </div>
         </div>

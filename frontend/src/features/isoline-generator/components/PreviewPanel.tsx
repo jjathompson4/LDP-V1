@@ -61,16 +61,16 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-full bg-neutral-900 border border-neutral-800 rounded-lg">
-                <div className="text-neutral-500">Generating preview...</div>
+            <div className="flex items-center justify-center h-full bg-app-surface border border-app-border rounded-lg">
+                <div className="text-app-text-muted">Generating preview...</div>
             </div>
         );
     }
 
     if (!data) {
         return (
-            <div className="flex items-center justify-center h-full bg-neutral-900 border border-neutral-800 rounded-lg">
-                <div className="text-neutral-500 text-center p-4">
+            <div className="flex items-center justify-center h-full bg-app-surface border border-app-border rounded-lg">
+                <div className="text-app-text-muted text-center p-4">
                     Upload an IES file and click Generate to see the preview.
                 </div>
             </div>
@@ -104,7 +104,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     key={`v${x}`}
                     x1={x} y1={minY}
                     x2={x} y2={maxY}
-                    stroke="#333"
+                    className="stroke-app-border"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
                 />
@@ -119,7 +119,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     key={`h${y}`}
                     x1={minX} y1={y}
                     x2={maxX} y2={y}
-                    stroke="#333"
+                    className="stroke-app-border"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
                 />
@@ -131,7 +131,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     return (
         <div
-            className="relative h-full bg-neutral-100 border border-neutral-800 rounded-lg overflow-hidden cursor-move"
+            className="relative h-full bg-app-bg border border-app-border rounded-lg overflow-hidden cursor-move"
             ref={containerRef}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
@@ -181,7 +181,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                                     y={label.y}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
-                                    stroke="white"
+                                    stroke="var(--color-bg)"
                                     strokeWidth={width * 0.005}
                                     paintOrder="stroke"
                                 >
@@ -192,7 +192,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     ))}
 
                     {/* Crosshair */}
-                    <g stroke="black" strokeWidth={width * 0.002}>
+                    <g className="stroke-app-text" strokeWidth={width * 0.002}>
                         <line x1={-width * 0.02} y1={0} x2={width * 0.02} y2={0} />
                         <line x1={0} y1={-width * 0.02} x2={0} y2={width * 0.02} />
                     </g>
@@ -200,7 +200,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                         x={width * 0.025}
                         y={-width * 0.025}
                         fontSize={width * 0.02}
-                        fill="black"
+                        className="fill-app-text"
                     >
                         MH={data.mountingHeight}{data.units}
                     </text>
@@ -208,8 +208,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     {/* Scale Bar (Bottom Left of data) */}
                     {includeScaleBar && (
                         <g transform={`translate(${minX + width * 0.05}, ${minY + height * 0.05})`}>
-                            <line x1={0} y1={0} x2={scaleBarLength} y2={0} stroke="black" strokeWidth={width * 0.004} />
-                            <text x={0} y={width * 0.02} fontSize={width * 0.02} fill="black">{scaleBarLength} {data.units}</text>
+                            <line x1={0} y1={0} x2={scaleBarLength} y2={0} className="stroke-app-text" strokeWidth={width * 0.004} />
+                            <text x={0} y={width * 0.02} fontSize={width * 0.02} className="fill-app-text">{scaleBarLength} {data.units}</text>
                         </g>
                     )}
 
@@ -219,7 +219,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             {/* Overlay Controls */}
             <div className="absolute bottom-4 right-4 flex gap-2">
                 <button
-                    className="bg-white p-2 rounded shadow text-gray-600 hover:text-gray-900"
+                    className="bg-app-surface p-2 rounded shadow text-app-text-muted hover:text-app-text border border-app-border"
                     onClick={() => setTransform({ x: 0, y: 0, scale: 1 })}
                     title="Reset View"
                 >

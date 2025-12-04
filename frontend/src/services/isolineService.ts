@@ -50,13 +50,30 @@ export interface ExportOptions {
     gridSpacing?: number | null;
 }
 
+const submitForm = (url: string, data: any) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = '_blank'; // Open in new tab to ensure download starts without navigating away
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'body';
+    input.value = JSON.stringify(data);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+};
+
 export const isolineService = {
-    compute: async (file: File, params: ComputeRequest): Promise<ComputeResponse> => {
+    compute: async (file: File, params: ComputeRequest) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('params', JSON.stringify(params));
 
-        const response = await axios.post(`${API_URL}/isoline/compute`, formData, {
+        const response = await axios.post<ComputeResponse>(`${API_URL}/isoline/compute`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -65,24 +82,10 @@ export const isolineService = {
     },
 
     exportPdf: async (isolineData: ComputeResponse, options: ExportOptions) => {
-        const response = await axios.post(
-            `${API_URL}/isoline/export-pdf`,
-            { isolineData, options },
-            {
-                responseType: 'blob',
-            }
-        );
-        return response.data;
+        submitForm(`${API_URL}/isoline/export-pdf`, { isolineData, options });
     },
 
     exportPng: async (isolineData: ComputeResponse, options: ExportOptions) => {
-        const response = await axios.post(
-            `${API_URL}/isoline/export-png`,
-            { isolineData, options },
-            {
-                responseType: 'blob',
-            }
-        );
-        return response.data;
+        submitForm(`${API_URL}/isoline/export-png`, { isolineData, options });
     },
 };

@@ -66,52 +66,52 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
 
     return (
         <div className="p-6 sm:p-8">
-            <p className="text-slate-400 mb-6">Customize the table columns and the AI's data extraction logic. Changes are saved automatically.</p>
+            <p className="text-app-text-muted mb-6">Customize the table columns and the AI's data extraction logic. Changes are saved automatically.</p>
             <div className="space-y-4">
                 {columns.map(col => (
                     <div
                         key={String(col.key)}
-                        className="bg-slate-700/50 p-4 rounded-lg flex flex-col md:flex-row gap-4 md:items-start"
+                        className="bg-app-surface-hover p-4 rounded-lg flex flex-col md:flex-row gap-4 md:items-start"
                         draggable
                         onDragStart={(e) => onDragStart(e, col)}
                         onDragOver={onDragOver}
                         onDrop={(e) => onDrop(e, col)}
                     >
                         <div className="flex-shrink-0 flex md:flex-col gap-2 items-center justify-between">
-                            <span className="cursor-move text-slate-500 hover:text-slate-300" title="Drag to reorder">
+                            <span className="cursor-move text-app-text-muted hover:text-app-text" title="Drag to reorder">
                                 <GripVertical className="w-6 h-6" />
                             </span>
                         </div>
                         <div className="flex-grow space-y-3">
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Column Label</label>
+                                <label className="block text-sm font-medium text-app-text-muted mb-1">Column Label</label>
                                 <input
                                     type="text"
                                     value={col.label}
                                     onChange={(e) => handleColumnChange(String(col.key), 'label', e.target.value)}
-                                    className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-slate-100 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                    className="w-full bg-app-bg border border-app-border rounded-md px-3 py-2 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">AI Extraction Instructions</label>
+                                <label className="block text-sm font-medium text-app-text-muted mb-1">AI Extraction Instructions</label>
                                 <textarea
                                     value={col.description}
                                     onChange={(e) => handleColumnChange(String(col.key), 'description', e.target.value)}
                                     rows={3}
-                                    className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-slate-100 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                                    className="w-full bg-app-bg border border-app-border rounded-md px-3 py-2 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
                                 />
                             </div>
                         </div>
                         <div className="flex-shrink-0 flex flex-row-reverse md:flex-col items-center gap-2 pt-2">
-                            <button onClick={() => handleColumnChange(String(col.key), 'visible', !col.visible)} className="p-2 rounded-full text-slate-400 hover:text-slate-100 hover:bg-slate-600" title={col.visible ? 'Hide Column' : 'Show Column'}>
+                            <button onClick={() => handleColumnChange(String(col.key), 'visible', !col.visible)} className="p-2 rounded-full text-app-text-muted hover:text-app-text hover:bg-app-surface" title={col.visible ? 'Hide Column' : 'Show Column'}>
                                 {col.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                             </button>
                             {col.isDefault ? (
-                                <button onClick={() => handleResetColumn(String(col.key))} className="p-2 rounded-full text-slate-400 hover:text-cyan-400 hover:bg-slate-600" title="Reset to default instructions">
+                                <button onClick={() => handleResetColumn(String(col.key))} className="p-2 rounded-full text-app-text-muted hover:text-app-primary hover:bg-app-surface" title="Reset to default instructions">
                                     <RefreshCw className="w-5 h-5" />
                                 </button>
                             ) : (
-                                <button onClick={() => handleRemoveColumn(String(col.key))} className="p-2 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-600" title="Delete custom column">
+                                <button onClick={() => handleRemoveColumn(String(col.key))} className="p-2 rounded-full text-app-text-muted hover:text-app-error hover:bg-app-surface" title="Delete custom column">
                                     <Trash2 className="w-5 h-5" />
                                 </button>
                             )}
@@ -122,7 +122,7 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
             <div className="mt-6">
                 <button
                     onClick={handleAddColumn}
-                    className="w-full flex items-center justify-center gap-2 bg-slate-700/50 text-cyan-400 font-semibold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800"
+                    className="w-full flex items-center justify-center gap-2 bg-app-surface-hover text-app-primary font-semibold py-2 px-4 rounded-lg hover:bg-app-border transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary focus:ring-offset-2 focus:ring-offset-app-surface"
                 >
                     <Plus className="w-5 h-5" />
                     Add Custom Column

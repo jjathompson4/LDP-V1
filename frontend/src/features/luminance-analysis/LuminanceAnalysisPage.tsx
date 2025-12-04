@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart2, Image as ImageIcon, Loader2, Crosshair, Trash2 } from 'lucide-react';
+import { Sun, Image as ImageIcon, Loader2, Crosshair, Trash2, BarChart2 } from 'lucide-react';
 import { ImageUpload } from './components/ImageUpload';
 import { DisplayControls } from './components/DisplayControls';
 import { FalseColorControls } from './components/FalseColorControls';
@@ -180,22 +180,22 @@ const LuminanceAnalysisPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen text-slate-300 font-sans bg-slate-900 flex flex-col h-screen overflow-hidden">
+        <div className="min-h-screen text-app-text-muted font-sans bg-app-bg flex flex-col h-screen overflow-hidden">
             {/* Header */}
-            <header className="bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 shrink-0 z-10">
-                <div className="px-6 py-3 flex items-center justify-between">
+            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border shrink-0 z-10">
+                <div className="p-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-cyan-500/20 rounded-lg flex items-center justify-center text-cyan-400">
-                            <BarChart2 className="w-5 h-5" />
+                        <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                            <Sun className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-xl font-bold text-slate-100 tracking-tight">Luminance Analysis</h1>
+                        <h1 className="text-xl font-bold text-app-text tracking-tight">Luminance Analysis</h1>
                     </div>
 
                     {stats && (
-                        <div className="flex gap-4 text-sm font-mono bg-slate-900/50 px-4 py-1.5 rounded-lg border border-slate-700">
-                            <span className="text-slate-400">Min: <span className="text-slate-200">{stats.min.toFixed(2)}</span></span>
-                            <span className="text-slate-400">Max: <span className="text-slate-200">{stats.max.toFixed(2)}</span></span>
-                            <span className="text-slate-400">Avg: <span className="text-slate-200">{stats.avg.toFixed(2)}</span></span>
+                        <div className="flex gap-4 text-sm font-mono bg-app-bg/50 px-4 py-1.5 rounded-lg border border-app-border">
+                            <span className="text-app-text-muted">Min: <span className="text-app-text">{stats.min.toFixed(2)}</span></span>
+                            <span className="text-app-text-muted">Max: <span className="text-app-text">{stats.max.toFixed(2)}</span></span>
+                            <span className="text-app-text-muted">Avg: <span className="text-app-text">{stats.avg.toFixed(2)}</span></span>
                         </div>
                     )}
                 </div>
@@ -203,18 +203,18 @@ const LuminanceAnalysisPage: React.FC = () => {
 
             <main className="flex-1 flex overflow-hidden">
                 {/* Sidebar Controls */}
-                <aside className="w-80 bg-slate-900 border-r border-slate-800 flex flex-col overflow-y-auto p-4 gap-4 shrink-0">
+                <aside className="w-80 bg-app-bg border-r border-app-border flex flex-col overflow-y-auto p-4 gap-4 shrink-0">
                     {!sessionId ? (
-                        <div className="p-4 bg-slate-800 rounded-xl border border-slate-700">
-                            <h3 className="text-slate-200 font-semibold mb-2">Upload Image</h3>
+                        <div className="p-4 bg-app-surface rounded-xl border border-app-border">
+                            <h3 className="text-app-text font-semibold mb-2">Upload Image</h3>
                             <ImageUpload onUpload={handleUpload} isProcessing={isUploading} />
-                            {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+                            {error && <p className="text-app-error text-sm mt-2">{error}</p>}
                         </div>
                     ) : (
                         <>
-                            <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-xs text-slate-400 break-all">
-                                <span className="font-semibold text-slate-300">File:</span> {filename} <br />
-                                <span className="font-semibold text-slate-300">Res:</span> {dimensions?.width} x {dimensions?.height}
+                            <div className="p-3 bg-app-surface/50 rounded-lg border border-app-border text-xs text-app-text-muted break-all">
+                                <span className="font-semibold text-app-text">File:</span> {filename} <br />
+                                <span className="font-semibold text-app-text">Res:</span> {dimensions?.width} x {dimensions?.height}
                             </div>
 
                             <DisplayControls
@@ -240,10 +240,10 @@ const LuminanceAnalysisPage: React.FC = () => {
                             />
 
                             <div className="space-y-4">
-                                <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-3">
+                                <div className="bg-app-surface rounded-xl border border-app-border p-4 space-y-3">
                                     <button
                                         onClick={handleCalibrate}
-                                        className="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 py-2.5 rounded-lg transition-colors text-sm font-medium"
+                                        className="w-full flex items-center justify-center gap-2 bg-app-surface-hover hover:bg-app-border border border-app-border text-app-text py-2.5 rounded-lg transition-colors text-sm font-medium"
                                     >
                                         <Crosshair className="w-4 h-4" /> Calibrate
                                     </button>
@@ -251,16 +251,16 @@ const LuminanceAnalysisPage: React.FC = () => {
                                     <div className="flex flex-col items-center gap-1">
                                         {scaleFactor !== 1.0 ? (
                                             <>
-                                                <span className="text-[10px] uppercase font-bold text-green-400 tracking-wider flex items-center gap-1">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div> Calibrated
+                                                <span className="text-[10px] uppercase font-bold text-app-success tracking-wider flex items-center gap-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-app-success"></div> Calibrated
                                                 </span>
-                                                <span className="text-[10px] font-mono text-slate-400">
+                                                <span className="text-[10px] font-mono text-app-text-muted">
                                                     Factor: {scaleFactor.toFixed(4)}
                                                 </span>
                                             </>
                                         ) : (
-                                            <span className="text-[10px] uppercase font-bold text-red-400 tracking-wider flex items-center gap-1">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div> Uncalibrated
+                                            <span className="text-[10px] uppercase font-bold text-app-error tracking-wider flex items-center gap-1">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-app-error"></div> Uncalibrated
                                             </span>
                                         )}
                                     </div>
@@ -268,7 +268,7 @@ const LuminanceAnalysisPage: React.FC = () => {
                                     <button
                                         onClick={handleClearAnnotations}
                                         disabled={pixelTags.length === 0 && roiTags.length === 0}
-                                        className="w-full flex items-center justify-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 py-2 rounded-lg transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full flex items-center justify-center gap-2 text-app-error hover:text-red-300 hover:bg-app-error/20 py-2 rounded-lg transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <Trash2 className="w-3 h-3" /> Clear Annotations
                                     </button>
@@ -276,7 +276,7 @@ const LuminanceAnalysisPage: React.FC = () => {
 
                                 <button
                                     onClick={handleShowHistogram}
-                                    className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-3 rounded-xl transition-colors text-sm font-medium"
+                                    className="w-full flex items-center justify-center gap-2 bg-app-surface hover:bg-app-surface-hover border border-app-border text-app-text py-3 rounded-xl transition-colors text-sm font-medium"
                                 >
                                     <BarChart2 className="w-4 h-4" /> View Histogram
                                 </button>
@@ -287,7 +287,7 @@ const LuminanceAnalysisPage: React.FC = () => {
                 </aside>
 
                 {/* Main Canvas Area */}
-                <div className="flex-1 bg-neutral-950 relative flex items-center justify-center overflow-hidden p-4">
+                <div className="flex-1 bg-app-bg relative flex items-center justify-center overflow-hidden p-4">
                     {currentImage && sessionId && dimensions ? (
                         <div className="relative w-full h-full flex flex-col">
                             <div className="flex-1 min-h-0 relative">
@@ -302,14 +302,14 @@ const LuminanceAnalysisPage: React.FC = () => {
                                 />
                                 {isRendering && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-10">
-                                        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                                        <Loader2 className="w-8 h-8 text-app-primary animate-spin" />
                                     </div>
                                 )}
                             </div>
 
                             {/* Legend */}
                             {falseColor && colorbar && (
-                                <div className="shrink-0 mt-4 bg-slate-900/80 backdrop-blur rounded-lg border border-slate-800 p-2 flex items-center justify-center w-full">
+                                <div className="shrink-0 mt-4 bg-app-bg/80 backdrop-blur rounded-lg border border-app-border p-2 flex items-center justify-center w-full">
                                     <img src={colorbar} alt="Legend" className="w-full h-auto object-contain" />
                                 </div>
                             )}

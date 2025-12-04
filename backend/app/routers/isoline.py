@@ -439,14 +439,16 @@ async def compute_isolines(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Computation Error: {str(e)}")
 
+from fastapi import Form
+
 @router.post("/export-pdf")
-async def export_pdf(req: ExportPdfRequest):
+async def export_pdf(body: str = Form(...)):
     import traceback
     try:
+        req = ExportPdfRequest.parse_raw(body)
         buffer = BytesIO()
         
         # Create PDF
-        # Page size
         # Page size
         page_w, page_h = 36*inch, 24*inch
             
@@ -566,16 +568,18 @@ async def export_pdf(req: ExportPdfRequest):
         
         buffer.seek(0)
         from fastapi.responses import StreamingResponse
-        return StreamingResponse(buffer, media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=isolines.pdf"})
+        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": "attachment; filename=isolines.pdf"})
+        
     except Exception as e:
         print(f"PDF Export Error: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"PDF Export Error: {str(e)}")
 
 @router.post("/export-png")
-async def export_png(req: ExportPngRequest):
+async def export_png(body: str = Form(...)):
     import traceback
     try:
+        req = ExportPngRequest.parse_raw(body)
         # Use matplotlib to render to PNG
         # We can reuse the logic from compute but this time we plot properly
         
@@ -657,8 +661,11 @@ async def export_png(req: ExportPngRequest):
         
         buffer.seek(0)
         from fastapi.responses import StreamingResponse
-        return StreamingResponse(buffer, media_type="image/png")
+        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": "attachment; filename=isolines.png"})
+        
     except Exception as e:
         print(f"PNG Export Error: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"PNG Export Error: {str(e)}")
+
+

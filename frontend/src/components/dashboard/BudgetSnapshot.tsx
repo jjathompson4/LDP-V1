@@ -46,14 +46,17 @@ export const BudgetSnapshotComponent: React.FC<BudgetSnapshotProps> = ({ snapsho
     const isOverBudget = (snapshot.spentHours / snapshot.budgetHours) * 100 > 100;
     const isNearBudget = (snapshot.spentHours / snapshot.budgetHours) * 100 > 85 && !isOverBudget;
 
-    let statusColor = 'bg-green-500';
+    let statusBg = 'bg-app-success';
+    let statusTextClass = 'text-app-success';
     let statusText = 'On Track';
 
     if (isOverBudget) {
-        statusColor = 'bg-red-500';
+        statusBg = 'bg-app-error';
+        statusTextClass = 'text-app-error';
         statusText = 'Over Budget';
     } else if (isNearBudget) {
-        statusColor = 'bg-yellow-500';
+        statusBg = 'bg-yellow-500'; // Keeping hardcoded for now as no warning token exists
+        statusTextClass = 'text-yellow-300';
         statusText = 'Near Limit';
     }
 
@@ -61,23 +64,23 @@ export const BudgetSnapshotComponent: React.FC<BudgetSnapshotProps> = ({ snapsho
         <>
             <div className="flex-1 flex flex-col justify-center p-4">
                 <div className="flex justify-between items-end mb-2">
-                    <div className="text-2xl font-bold text-slate-100">
+                    <div className="text-2xl font-bold text-app-text">
                         {percentage}%
-                        <span className="text-sm font-normal text-slate-400 ml-2">spent</span>
+                        <span className="text-sm font-normal text-app-text-muted ml-2">spent</span>
                     </div>
-                    <div className={`text-xs font-bold px-2 py-1 rounded-full ${statusColor} bg-opacity-20 text-${statusColor.split('-')[1]}-300`}>
+                    <div className={`text-xs font-bold px-2 py-1 rounded-full ${statusBg} bg-opacity-20 ${statusTextClass}`}>
                         {statusText}
                     </div>
                 </div>
 
-                <div className="w-full bg-slate-700 rounded-full h-3 mb-2 overflow-hidden">
+                <div className="w-full bg-app-surface-hover rounded-full h-3 mb-2 overflow-hidden">
                     <div
-                        className={`h-full rounded-full ${statusColor} transition-all duration-500`}
+                        className={`h-full rounded-full ${statusBg} transition-all duration-500`}
                         style={{ width: `${percentage}%` }}
                     ></div>
                 </div>
 
-                <div className="flex justify-between text-xs text-slate-400">
+                <div className="flex justify-between text-xs text-app-text-muted">
                     <span>{snapshot.spentHours}h spent</span>
                     <span>{snapshot.budgetHours}h total</span>
                 </div>
@@ -85,20 +88,20 @@ export const BudgetSnapshotComponent: React.FC<BudgetSnapshotProps> = ({ snapsho
 
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-slate-800 rounded-lg shadow-xl border border-slate-700 w-full max-w-sm overflow-hidden">
-                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-100">Edit Budget</h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+                    <div className="bg-app-surface rounded-lg shadow-xl border border-app-border w-full max-w-sm overflow-hidden">
+                        <div className="p-4 border-b border-app-border flex justify-between items-center">
+                            <h3 className="font-bold text-app-text">Edit Budget</h3>
+                            <button onClick={onClose} className="text-app-text-muted hover:text-app-text">
                                 <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Phase</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Phase</label>
                                 <select
                                     value={formData.phase}
                                     onChange={e => setFormData({ ...formData, phase: e.target.value })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                 >
                                     <option value="Concept">Concept</option>
                                     <option value="SD">SD</option>
@@ -108,37 +111,37 @@ export const BudgetSnapshotComponent: React.FC<BudgetSnapshotProps> = ({ snapsho
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Budget Hours</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Budget Hours</label>
                                 <input
                                     type="number"
                                     min="0"
                                     value={formData.budgetHours}
                                     onChange={e => setFormData({ ...formData, budgetHours: parseInt(e.target.value) || 0 })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Spent Hours</label>
+                                <label className="block text-xs font-medium text-app-text-muted mb-1">Spent Hours</label>
                                 <input
                                     type="number"
                                     min="0"
                                     value={formData.spentHours}
                                     onChange={e => setFormData({ ...formData, spentHours: parseInt(e.target.value) || 0 })}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-app-text focus:outline-none focus:border-app-primary"
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                                    className="px-4 py-2 text-sm text-app-text-muted hover:text-app-text"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
+                                    className="px-4 py-2 text-sm bg-app-primary hover:bg-app-primary-hover text-white rounded font-medium disabled:opacity-50"
                                 >
                                     {loading ? 'Saving...' : 'Save Changes'}
                                 </button>

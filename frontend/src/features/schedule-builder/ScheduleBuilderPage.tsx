@@ -6,8 +6,7 @@ import { ExtractionSettings } from './components/ExtractionSettings';
 import { extractFixtureDataFromPdf } from './services/geminiService';
 import { exportToXLSX } from './utils/export';
 import type { Fixture, ProcessedFile, ColumnConfig, SelectedCell } from './types';
-import { LogoIcon } from './components/icons/LogoIcon';
-import { ChevronUp, ChevronDown, Settings, UploadCloud, Table, ArrowDownAZ } from 'lucide-react';
+import { ChevronUp, ChevronDown, Settings, UploadCloud, Table, ArrowDownAZ, Table2 } from 'lucide-react';
 import { DEFAULT_COLUMNS } from './utils/columns';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { getApiKey, setApiKey } from './utils/apiKey';
@@ -363,7 +362,7 @@ const ScheduleBuilderPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen text-slate-300 font-sans bg-slate-900">
+        <div className="min-h-screen text-app-text-muted font-sans bg-app-bg">
             <ApiKeyModal isVisible={isApiKeyModalVisible} onSave={handleSaveApiKey} />
 
             {/* Measurement tools for auto-sizing */}
@@ -372,11 +371,13 @@ const ScheduleBuilderPage: React.FC = () => {
                 <textarea ref={rowMeasureRef} style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '20px', resize: 'none', padding: '8px', border: 'none', boxSizing: 'border-box' }} rows={1}></textarea>
             </div>
 
-            <header className="bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-10">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border sticky top-0 z-10">
+                <div className="container mx-auto p-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <LogoIcon className="h-8 w-8 text-cyan-500" />
-                        <h1 className="text-xl font-bold text-slate-100 tracking-tight">Lighting Equipment Schedule Builder</h1>
+                        <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                            <Table2 className="w-5 h-5 text-white" />
+                        </div>
+                        <h1 className="text-xl font-bold text-app-text tracking-tight">Lighting Equipment Schedule Builder</h1>
                     </div>
                 </div>
             </header>
@@ -388,17 +389,17 @@ const ScheduleBuilderPage: React.FC = () => {
                     style={{ maxWidth: contentWidth ? `${contentWidth}px` : undefined, width: contentWidth ? '100%' : undefined }}
                 >
                     <div className="space-y-8">
-                        <div ref={uploadModuleRef} className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700">
-                            <div className={`p-3 sm:p-4 ${isUploadVisible ? 'border-b border-slate-700/50' : ''}`}>
+                        <div ref={uploadModuleRef} className="bg-app-surface rounded-2xl shadow-lg border border-app-border">
+                            <div className={`p-3 sm:p-4 ${isUploadVisible ? 'border-b border-app-border/50' : ''}`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <UploadCloud className="w-5 h-5 text-slate-400" />
-                                        <h3 className="text-lg font-semibold text-slate-100">Upload Product Data Sheets</h3>
+                                        <UploadCloud className="w-5 h-5 text-app-text-muted" />
+                                        <h3 className="text-lg font-semibold text-app-text">Upload Product Data Sheets</h3>
                                     </div>
                                     <button
                                         onClick={() => setIsUploadVisible(prev => !prev)}
                                         aria-label={isUploadVisible ? "Collapse upload section" : "Expand upload section"}
-                                        className="p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary"
                                     >
                                         {isUploadVisible ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                     </button>
@@ -406,7 +407,7 @@ const ScheduleBuilderPage: React.FC = () => {
                             </div>
                             {isUploadVisible && (
                                 <div className="p-6 sm:p-8">
-                                    <p className="text-slate-400 mb-6">Drag and drop your PDF files here. We'll extract the lighting data for you.</p>
+                                    <p className="text-app-text-muted mb-6">Drag and drop your PDF files here. We'll extract the lighting data for you.</p>
                                     <FileUpload onFilesUpload={handleFilesUpload} isProcessing={isProcessing} />
                                 </div>
                             )}
@@ -421,17 +422,17 @@ const ScheduleBuilderPage: React.FC = () => {
                             />
                         </div>
 
-                        <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700">
-                            <div className={`p-3 sm:p-4 ${isExtractionSettingsVisible ? 'border-b border-slate-700/50' : ''}`}>
+                        <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border">
+                            <div className={`p-3 sm:p-4 ${isExtractionSettingsVisible ? 'border-b border-app-border/50' : ''}`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <Settings className="w-5 h-5 text-slate-400" />
-                                        <h3 className="text-lg font-semibold text-slate-100">Extraction & Column Settings</h3>
+                                        <Settings className="w-5 h-5 text-app-text-muted" />
+                                        <h3 className="text-lg font-semibold text-app-text">Extraction & Column Settings</h3>
                                     </div>
                                     <button
                                         onClick={() => setIsExtractionSettingsVisible(prev => !prev)}
                                         aria-label={isExtractionSettingsVisible ? "Collapse extraction settings" : "Expand extraction settings"}
-                                        className="p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary"
                                     >
                                         {isExtractionSettingsVisible ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                     </button>
@@ -445,17 +446,17 @@ const ScheduleBuilderPage: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700">
-                            <div className={`p-3 sm:p-4 ${isScheduleVisible ? 'border-b border-slate-700/50' : ''}`}>
+                        <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border">
+                            <div className={`p-3 sm:p-4 ${isScheduleVisible ? 'border-b border-app-border/50' : ''}`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <Table className="w-5 h-5 text-slate-400" />
-                                        <h3 className="text-lg font-semibold text-slate-100">Review & Edit Schedule</h3>
+                                        <Table className="w-5 h-5 text-app-text-muted" />
+                                        <h3 className="text-lg font-semibold text-app-text">Review & Edit Schedule</h3>
                                     </div>
                                     <button
                                         onClick={() => setIsScheduleVisible(prev => !prev)}
                                         aria-label={isScheduleVisible ? "Collapse schedule section" : "Expand schedule section"}
-                                        className="p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary"
                                     >
                                         {isScheduleVisible ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                     </button>
@@ -466,21 +467,22 @@ const ScheduleBuilderPage: React.FC = () => {
                                 <div className="p-6 sm:p-8">
                                     <div className="flex flex-col sm:flex-row justify-between sm:items-start mb-6 gap-4">
                                         <div>
-                                            <p className="text-slate-400">Click to select, Ctrl/Cmd-click for multiple, Shift-click for range.</p>
+                                            <p className="text-app-text-muted">Click to select, Ctrl/Cmd-click for multiple, Shift-click for range.</p>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
                                             <button
                                                 onClick={sortFixtures}
                                                 disabled={isProcessing || fixtures.length === 0}
-                                                className="w-full sm:w-auto bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-slate-700 disabled:bg-slate-500 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900 flex items-center gap-2"
+                                                className="w-full sm:w-auto bg-app-surface-hover text-app-text font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-app-border disabled:bg-app-surface disabled:text-app-text-muted disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary focus:ring-offset-2 focus:ring-offset-app-bg flex items-center gap-2"
                                             >
                                                 <ArrowDownAZ className="w-5 h-5" />
                                                 Sort A-Z
                                             </button>
+
                                             <button
                                                 onClick={() => exportToXLSX(fixtures, columns.filter(c => c.visible), 'Lighting-Equipment-Schedule', columnWidths, rowHeights)}
                                                 disabled={isProcessing || fixtures.length === 0}
-                                                className="w-full sm:w-auto bg-cyan-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-cyan-700 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                                                className="w-full sm:w-auto bg-app-primary text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-app-primary-hover disabled:bg-app-surface-hover disabled:text-app-text-muted disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary focus:ring-offset-2 focus:ring-offset-app-bg"
                                             >
                                                 Export to Excel
                                             </button>
@@ -508,7 +510,7 @@ const ScheduleBuilderPage: React.FC = () => {
                         title="Resize width"
                     >
                         <div
-                            className="absolute left-1/2 -translate-x-1/2 w-1 h-10 bg-slate-700 group-hover:bg-cyan-500 transition-colors rounded-full"
+                            className="absolute left-1/2 -translate-x-1/2 w-1 h-10 bg-app-border group-hover:bg-app-primary transition-colors rounded-full"
                             style={{
                                 top: uploadModuleTop + (uploadModuleHeight / 2) - 20, // 20 is half of h-10 (40px)
                             }}

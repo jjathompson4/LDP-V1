@@ -1,6 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')
-from fastapi import FastAPI, UploadFile, File, HTTPException, Body
+from fastapi import FastAPI, UploadFile, File, HTTPException, Body, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
@@ -24,6 +24,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://localhost:4173",
         "http://localhost:3000",
         "https://ldp-frontend.onrender.com"
     ],
@@ -215,6 +216,20 @@ async def get_histogram(sessionId: str):
         return HistogramResponse(bins=bins, counts=counts)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import Form
+from io import BytesIO
+
+@app.post("/download-proxy")
+async def download_proxy(filename: str = Form(...), content_type: str = Form(...), base64_data: str = Form(...)):
+    import base64
+    from fastapi.responses import StreamingResponse
+    try:
+        data = base64.b64decode(base64_data)
+        buffer = BytesIO(data)
+        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": f"attachment; filename={filename}"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Download Proxy Error: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

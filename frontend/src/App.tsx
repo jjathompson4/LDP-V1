@@ -9,21 +9,25 @@ import Dashboard from './pages/Dashboard';
 
 import { ProjectProvider } from './context/ProjectContext';
 
+import { ThemeProvider } from './context/ThemeContext';
+
 function App() {
   return (
-    <ProjectProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<ShellLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="schedule-builder" element={<ScheduleBuilderPage />} />
-            <Route path="luminance-analysis" element={<LuminanceAnalysisPage />} />
-            <Route path="isoline-generator" element={<IsolineGeneratorPage />} />
-          </Route>
-        </Routes>
-      </Router>
-    </ProjectProvider>
+    <ThemeProvider>
+      <ProjectProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<ShellLayout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="schedule-builder" element={<ScheduleBuilderPage />} />
+              <Route path="luminance-analysis" element={<LuminanceAnalysisPage />} />
+              <Route path="isoline-generator" element={<IsolineGeneratorPage />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ProjectProvider>
+    </ThemeProvider>
   );
 }
 
