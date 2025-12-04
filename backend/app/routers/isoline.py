@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 from io import BytesIO
@@ -56,13 +58,13 @@ class ComputeResponse(BaseModel):
     levels: List[IsolineLevelResult]
 
 class ExportOptions(BaseModel):
-    pageSize: str = "auto"
-    includeLegend: bool = True
+    format: str = "pdf"
+    includeScaleBar: bool = True
     includeLabels: bool = True
-    scaleBarLength: float = 50.0
-    units: str = "ft"
-    illuminanceUnits: str = "fc"
     includeDisclaimer: bool = True
+    includeGrid: bool = False
+    scaleBarLength: float = 50.0
+    gridSpacing: Optional[float] = None
 
 class ExportPdfRequest(BaseModel):
     isolineData: ComputeResponse
@@ -339,6 +341,21 @@ async def compute_isolines(
     try:
         # Compute Grid
         radius = req.radiusFactor * req.mountingHeight
+        
+        # Check grid size to prevent OOM
+        if req.detailLevel == "low":
+            spacing = 2.0
+        elif req.detailLevel == "high":
+            spacing = 0.5
+        else: # medium
+            spacing = 1.0
+            
+        grid_dim = int((2 * radius) / spacing)
+        num_points = grid_dim * grid_dim
+        
+        if num_points > 5000000: # Limit to ~5 million points
+            raise HTTPException(status_code=400, detail=f"Grid too large ({num_points} points). Please reduce Radius or Detail Level.")
+            
         xx, yy, illuminance = compute_grid(
             ies_data, 
             req.mountingHeight, 
@@ -347,6 +364,9 @@ async def compute_isolines(
             req.detailLevel, 
             req.llf
         )
+        
+        # Sanitize NaNs
+        illuminance = np.nan_to_num(illuminance, nan=0.0)
         
         # Convert units if needed
         grid_units = "fc" if req.units == "ft" else "lux"
@@ -372,26 +392,28 @@ async def compute_isolines(
             if len(cs.allsegs) > 0:
                 for v in cs.allsegs[0]:
                     # v is a numpy array of vertices (N, 2)
+                    if len(v) == 0:
+                        continue
+                        
                     paths.append(v.tolist())
                     
                     # Generate sparse labels
-                    if len(v) > 0:
-                        last_pt = v[0]
-                        accum_dist = 0
-                        label_interval = 40.0 if req.units == "ft" else 12.0
-                        
-                        for i in range(1, len(v)):
-                            pt = v[i]
-                            dist = np.linalg.norm(pt - last_pt)
-                            accum_dist += dist
-                            if accum_dist > label_interval:
-                                labels.append({
-                                    "x": float(pt[0]), 
-                                    "y": float(pt[1]), 
-                                    "text": f"{iso.value} {req.illuminanceUnits}"
-                                })
-                                accum_dist = 0
-                            last_pt = pt
+                    last_pt = v[0]
+                    accum_dist = 0
+                    label_interval = 40.0 if req.units == "ft" else 12.0
+                    
+                    for i in range(1, len(v)):
+                        pt = v[i]
+                        dist = np.linalg.norm(pt - last_pt)
+                        accum_dist += dist
+                        if accum_dist > label_interval:
+                            labels.append({
+                                "x": float(pt[0]), 
+                                "y": float(pt[1]), 
+                                "text": f"{iso.value} {req.illuminanceUnits}"
+                            })
+                            accum_dist = 0
+                        last_pt = pt
                         
             plt.close(fig)
             
@@ -425,12 +447,8 @@ async def export_pdf(req: ExportPdfRequest):
         
         # Create PDF
         # Page size
-        if req.options.pageSize == "auto":
-            # Determine size based on extents and scale
-            # Let's default to a reasonable size, e.g. 24x36 inch
-            page_w, page_h = 36*inch, 24*inch
-        else:
-            page_w, page_h = 36*inch, 24*inch # Default
+        # Page size
+        page_w, page_h = 36*inch, 24*inch
             
         c = canvas.Canvas(buffer, pagesize=(page_w, page_h))
         
@@ -457,12 +475,42 @@ async def export_pdf(req: ExportPdfRequest):
         
         c.scale(scale, scale)
         
+        # Draw Grid if requested
+        if req.options.includeGrid and req.options.gridSpacing:
+            c.setStrokeColorRGB(0.8, 0.8, 0.8) # Light gray
+            c.setLineWidth(0.5 / scale) # Thin line
+            c.setDash([1 / scale, 2 / scale]) # Dotted
+            
+            spacing = req.options.gridSpacing
+            min_x, max_x = extents["minX"], extents["maxX"]
+            min_y, max_y = extents["minY"], extents["maxY"]
+            
+            # Vertical lines
+            start_x = (int(min_x / spacing)) * spacing
+            x = start_x
+            while x <= max_x:
+                if x >= min_x:
+                    c.line(x, min_y, x, max_y)
+                x += spacing
+                
+            # Horizontal lines
+            start_y = (int(min_y / spacing)) * spacing
+            y = start_y
+            while y <= max_y:
+                if y >= min_y:
+                    c.line(min_x, y, max_x, y)
+                y += spacing
+                
+            c.setDash([]) # Reset dash
+
         # Draw Isolines
         c.setLineWidth(1.0/scale) # Constant width in points regardless of scale
         
         for level in req.isolineData.levels:
             c.setStrokeColor(HexColor(level.color))
             for path in level.paths:
+                if not path or len(path) < 2:
+                    continue
                 p = c.beginPath()
                 p.moveTo(path[0][0], path[0][1])
                 for pt in path[1:]:
@@ -486,6 +534,12 @@ async def export_pdf(req: ExportPdfRequest):
         ch_size = (5.0 if req.isolineData.units == "ft" else 1.5) # 5ft or 1.5m
         c.line(-ch_size, 0, ch_size, 0)
         c.line(0, -ch_size, 0, ch_size)
+        
+        # Draw MH Tag
+        mh_text = f"MH={req.isolineData.mountingHeight}{req.isolineData.units}"
+        c.setFont("Helvetica", 12.0/scale)
+        c.setFillColor(HexColor("#000000"))
+        c.drawString(ch_size * 1.2, -ch_size * 1.2, mh_text)
         
         # Draw Scale Bar (bottom left of data area)
         sb_len = req.options.scaleBarLength
@@ -527,12 +581,44 @@ async def export_png(req: ExportPngRequest):
         
         fig, ax = plt.subplots(figsize=(10, 10)) # Arbitrary size, we will set DPI
         
+        extents = req.isolineData.extents
+        
         # We don't have the grid data here, only paths.
         # So we just plot paths.
         
+        # Draw Grid if requested
+        if req.options.includeGrid and req.options.gridSpacing:
+            spacing = req.options.gridSpacing
+            
+            # Vertical lines
+            start_x = (int(extents["minX"] / spacing)) * spacing
+            x_lines = []
+            x = start_x
+            while x <= extents["maxX"]:
+                if x >= extents["minX"]:
+                    x_lines.append(x)
+                x += spacing
+                
+            if x_lines:
+                ax.vlines(x_lines, extents["minY"], extents["maxY"], colors='#cccccc', linestyles=':', linewidth=0.5)
+                
+            # Horizontal lines
+            start_y = (int(extents["minY"] / spacing)) * spacing
+            y_lines = []
+            y = start_y
+            while y <= extents["maxY"]:
+                if y >= extents["minY"]:
+                    y_lines.append(y)
+                y += spacing
+                
+            if y_lines:
+                ax.hlines(y_lines, extents["minX"], extents["maxX"], colors='#cccccc', linestyles=':', linewidth=0.5)
+
         for level in req.isolineData.levels:
             color = level.color
             for path in level.paths:
+                if not path or len(path) < 2:
+                    continue
                 pts = np.array(path)
                 ax.plot(pts[:, 0], pts[:, 1], color=color, linewidth=1.5)
                 
@@ -541,7 +627,6 @@ async def export_png(req: ExportPngRequest):
                     ax.text(label.x, label.y, label.text, color=color, fontsize=8)
                     
         # Set limits
-        extents = req.isolineData.extents
         ax.set_xlim(extents["minX"], extents["maxX"])
         ax.set_ylim(extents["minY"], extents["maxY"])
         ax.set_aspect('equal')
@@ -550,6 +635,10 @@ async def export_png(req: ExportPngRequest):
         # Crosshair
         ax.plot([-5, 5], [0, 0], 'k-', linewidth=1)
         ax.plot([0, 0], [-5, 5], 'k-', linewidth=1)
+        
+        # MH Tag
+        mh_text = f"MH={req.isolineData.mountingHeight}{req.isolineData.units}"
+        ax.text(6, -6, mh_text, color='black', fontsize=10)
         
         # Scale Bar
         sb_len = req.options.scaleBarLength

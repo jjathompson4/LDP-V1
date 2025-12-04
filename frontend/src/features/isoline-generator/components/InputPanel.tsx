@@ -7,9 +7,19 @@ interface InputPanelProps {
     scaleBarLength: number;
     setScaleBarLength: (val: number) => void;
     units: 'ft' | 'm';
+    gridSize: number | null;
+    setGridSize: (size: number | null) => void;
 }
 
-const InputPanel: React.FC<InputPanelProps> = ({ onGenerate, isGenerating, scaleBarLength, setScaleBarLength, units: currentUnits }) => {
+const InputPanel: React.FC<InputPanelProps> = ({
+    onGenerate,
+    isGenerating,
+    scaleBarLength,
+    setScaleBarLength,
+    units: currentUnits,
+    gridSize,
+    setGridSize
+}) => {
     const [file, setFile] = useState<File | null>(null);
     const [units, setUnits] = useState<'ft' | 'm'>('ft');
     const [mh, setMh] = useState<number>(25);
@@ -205,17 +215,32 @@ const InputPanel: React.FC<InputPanelProps> = ({ onGenerate, isGenerating, scale
                 </div>
             </div>
 
-            {/* Scale Bar Length */}
+            {/* Scale Bar & Grid Overlay */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-neutral-300">Scale Bar</h3>
-                <div>
-                    <label className="block text-xs text-neutral-500 mb-1">Length ({currentUnits})</label>
-                    <input
-                        type="number"
-                        value={scaleBarLength}
-                        onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
-                        className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                    />
+                <h3 className="text-sm font-medium text-neutral-300">Scale Bar & Grid</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <label className="block text-xs text-neutral-500 mb-1">Length ({currentUnits})</label>
+                        <input
+                            type="number"
+                            value={scaleBarLength}
+                            onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
+                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-neutral-500 mb-1">Grid Spacing</label>
+                        <select
+                            value={gridSize || ''}
+                            onChange={(e) => setGridSize(e.target.value ? parseFloat(e.target.value) : null)}
+                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 rounded-md shadow-sm text-sm focus:ring-cyan-500 focus:border-cyan-500"
+                        >
+                            <option value="">None</option>
+                            <option value="1">1x1 {currentUnits}</option>
+                            <option value="5">5x5 {currentUnits}</option>
+                            <option value="10">10x10 {currentUnits}</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -295,22 +320,19 @@ const InputPanel: React.FC<InputPanelProps> = ({ onGenerate, isGenerating, scale
                 </div>
             )}
 
-            {/* Disclaimer */}
-            <div className="text-xs text-neutral-500 italic mt-2">
-                For preliminary layout and visual reference only; use full AGi32/Lighting design calculations for final documentation and compliance.
-            </div>
-
             {/* Action Button */}
             <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !file}
-                className={`w - full py - 2 px - 4 rounded - md text - white font - medium transition - colors ${isGenerating || !file
-                        ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                        : 'bg-cyan-600 hover:bg-cyan-500'
-                    } `}
+                className="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-cyan-400 border border-neutral-700 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isGenerating ? 'Generating...' : 'Generate Isolines'}
             </button>
+
+            {/* Disclaimer */}
+            <div className="text-xs text-neutral-500 italic mt-2">
+                For preliminary layout and visual reference only; use full AGi32/Lighting design calculations for final documentation and compliance.
+            </div>
         </div>
     );
 };

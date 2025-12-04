@@ -12,6 +12,13 @@ const IsolineGeneratorPage: React.FC = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [scaleBarLength, setScaleBarLength] = useState<number>(50);
+    const [gridSize, setGridSize] = useState<number | null>(null);
+
+    // Export Options State
+    const [includeScaleBar, setIncludeScaleBar] = useState(true);
+    const [includeLabels, setIncludeLabels] = useState(true);
+    const [includeDisclaimer, setIncludeDisclaimer] = useState(true);
+    const [includeGrid, setIncludeGrid] = useState(false);
 
     const handleGenerate = async (file: File, params: ComputeRequest) => {
         setIsGenerating(true);
@@ -26,7 +33,8 @@ const IsolineGeneratorPage: React.FC = () => {
             if (data.units === 'ft' && scaleBarLength === 15) setScaleBarLength(50);
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.detail || 'An error occurred during generation.');
+            const errorMsg = err.response?.data?.detail || err.message || 'An error occurred during generation.';
+            setError(errorMsg);
         } finally {
             setIsGenerating(false);
         }
@@ -36,8 +44,16 @@ const IsolineGeneratorPage: React.FC = () => {
         if (!computeData) return;
         setIsExporting(true);
         try {
-            // Ensure options use current scaleBarLength
-            const finalOptions = { ...options, scaleBarLength };
+            // Ensure options use current state
+            const finalOptions = {
+                ...options,
+                scaleBarLength,
+                includeScaleBar,
+                includeLabels,
+                includeDisclaimer,
+                includeGrid,
+                gridSpacing: includeGrid ? gridSize : undefined
+            };
             const blob = await isolineService.exportPdf(computeData, finalOptions);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -58,7 +74,15 @@ const IsolineGeneratorPage: React.FC = () => {
         if (!computeData) return;
         setIsExporting(true);
         try {
-            const finalOptions = { ...options, scaleBarLength };
+            const finalOptions = {
+                ...options,
+                scaleBarLength,
+                includeScaleBar,
+                includeLabels,
+                includeDisclaimer,
+                includeGrid,
+                gridSpacing: includeGrid ? gridSize : undefined
+            };
             const blob = await isolineService.exportPng(computeData, finalOptions);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -91,6 +115,8 @@ const IsolineGeneratorPage: React.FC = () => {
                         scaleBarLength={scaleBarLength}
                         setScaleBarLength={setScaleBarLength}
                         units={computeData?.units || 'ft'}
+                        gridSize={gridSize}
+                        setGridSize={setGridSize}
                     />
                 </div>
 
@@ -108,6 +134,10 @@ const IsolineGeneratorPage: React.FC = () => {
                             data={computeData}
                             isLoading={isGenerating}
                             scaleBarLength={scaleBarLength}
+                            gridSize={gridSize}
+                            includeScaleBar={includeScaleBar}
+                            includeLabels={includeLabels}
+                            includeGrid={includeGrid}
                         />
                     </div>
 
@@ -119,6 +149,14 @@ const IsolineGeneratorPage: React.FC = () => {
                             onExportPng={handleExportPng}
                             isExporting={isExporting}
                             scaleBarLength={scaleBarLength}
+                            includeScaleBar={includeScaleBar}
+                            setIncludeScaleBar={setIncludeScaleBar}
+                            includeLabels={includeLabels}
+                            setIncludeLabels={setIncludeLabels}
+                            includeDisclaimer={includeDisclaimer}
+                            setIncludeDisclaimer={setIncludeDisclaimer}
+                            includeGrid={includeGrid}
+                            setIncludeGrid={setIncludeGrid}
                         />
                     </div>
                 </div>

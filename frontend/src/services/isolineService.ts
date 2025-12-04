@@ -41,13 +41,13 @@ export interface ComputeResponse {
 }
 
 export interface ExportOptions {
-    pageSize: 'auto' | '24x36';
-    includeLegend: boolean;
+    format: 'pdf' | 'png';
+    includeScaleBar: boolean;
     includeLabels: boolean;
-    scaleBarLength: number;
-    units: 'ft' | 'm';
-    illuminanceUnits: 'fc' | 'lux';
     includeDisclaimer: boolean;
+    includeGrid: boolean;
+    scaleBarLength: number;
+    gridSpacing?: number | null;
 }
 
 export const isolineService = {

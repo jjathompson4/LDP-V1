@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 from fastapi import FastAPI, UploadFile, File, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

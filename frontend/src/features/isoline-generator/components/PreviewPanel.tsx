@@ -5,9 +5,21 @@ interface PreviewPanelProps {
     data: ComputeResponse | null;
     isLoading: boolean;
     scaleBarLength: number;
+    gridSize: number | null;
+    includeScaleBar?: boolean;
+    includeLabels?: boolean;
+    includeGrid?: boolean;
 }
 
-const PreviewPanel: React.FC<PreviewPanelProps> = ({ data, isLoading, scaleBarLength }) => {
+const PreviewPanel: React.FC<PreviewPanelProps> = ({
+    data,
+    isLoading,
+    scaleBarLength,
+    gridSize,
+    includeScaleBar = true,
+    includeLabels = true,
+    includeGrid = false
+}) => {
     const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
@@ -76,6 +88,47 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ data, isLoading, scaleBarLe
     const vbW = width + padding * 2;
     const vbH = height + padding * 2;
 
+    // Generate Grid Lines
+    const renderGrid = () => {
+        // Only render if includeGrid is true AND gridSize is set
+        if (!includeGrid || !gridSize) return null;
+
+        const lines = [];
+        const strokeWidth = width * 0.001;
+
+        // Vertical lines
+        const startX = Math.floor(minX / gridSize) * gridSize;
+        for (let x = startX; x <= maxX; x += gridSize) {
+            lines.push(
+                <line
+                    key={`v${x}`}
+                    x1={x} y1={minY}
+                    x2={x} y2={maxY}
+                    stroke="#333"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
+                />
+            );
+        }
+
+        // Horizontal lines
+        const startY = Math.floor(minY / gridSize) * gridSize;
+        for (let y = startY; y <= maxY; y += gridSize) {
+            lines.push(
+                <line
+                    key={`h${y}`}
+                    x1={minX} y1={y}
+                    x2={maxX} y2={y}
+                    stroke="#333"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
+                />
+            );
+        }
+
+        return <g>{lines}</g>;
+    };
+
     return (
         <div
             className="relative h-full bg-neutral-100 border border-neutral-800 rounded-lg overflow-hidden cursor-move"
@@ -103,7 +156,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ data, isLoading, scaleBarLe
                     preserveAspectRatio="xMidYMid meet"
                     style={{ vectorEffect: 'non-scaling-stroke' }} // Doesn't work on group, need on elements
                 >
-                    {/* Grid/Background optional */}
+                    {/* Grid Overlay */}
+                    {renderGrid()}
 
                     {/* Isolines */}
                     {data.levels.map((level, idx) => (
@@ -118,7 +172,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ data, isLoading, scaleBarLe
                     ))}
 
                     {/* Labels */}
-                    {data.levels.map((level, idx) => (
+                    {includeLabels && data.levels.map((level, idx) => (
                         <g key={`lbl-${idx}`} fill={level.color} style={{ fontSize: width * 0.015 }}>
                             {level.labels.map((label, lIdx) => (
                                 <text
@@ -152,10 +206,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ data, isLoading, scaleBarLe
                     </text>
 
                     {/* Scale Bar (Bottom Left of data) */}
-                    <g transform={`translate(${minX + width * 0.05}, ${minY + height * 0.05})`}>
-                        <line x1={0} y1={0} x2={scaleBarLength} y2={0} stroke="black" strokeWidth={width * 0.004} />
-                        <text x={0} y={width * 0.02} fontSize={width * 0.02} fill="black">{scaleBarLength} {data.units}</text>
-                    </g>
+                    {includeScaleBar && (
+                        <g transform={`translate(${minX + width * 0.05}, ${minY + height * 0.05})`}>
+                            <line x1={0} y1={0} x2={scaleBarLength} y2={0} stroke="black" strokeWidth={width * 0.004} />
+                            <text x={0} y={width * 0.02} fontSize={width * 0.02} fill="black">{scaleBarLength} {data.units}</text>
+                        </g>
+                    )}
 
                 </svg>
             </div>
