@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import type { ComputeRequest, IsolineLevel } from '../../../services/isolineService';
+import { DropZone } from '../../../components/shared/DropZone';
 
 interface InputPanelProps {
     onGenerate: (file: File, params: ComputeRequest) => void;
@@ -35,32 +36,10 @@ const InputPanel: React.FC<InputPanelProps> = ({
     ]);
     const [error, setError] = useState<string | null>(null);
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0];
-            if (!selectedFile.name.toLowerCase().endsWith('.ies')) {
-                setError('Please upload a .ies file.');
-                setFile(null);
-                return;
-            }
-            setFile(selectedFile);
-            setError(null);
-        }
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const selectedFile = e.dataTransfer.files[0];
-            if (!selectedFile.name.toLowerCase().endsWith('.ies')) {
-                setError('Please upload a .ies file.');
-                return;
-            }
-            setFile(selectedFile);
-            setError(null);
-        }
+    const handleFilesSelected = (files: File[]) => {
+        if (files.length === 0) return;
+        setFile(files[0]);
+        setError(null);
     };
 
     const addIsoLevel = () => {
@@ -113,27 +92,21 @@ const InputPanel: React.FC<InputPanelProps> = ({
             <h2 className="text-lg font-semibold text-app-text">Input Parameters</h2>
 
             {/* Photometric File */}
-            <div className="p-4 border border-dashed border-app-border rounded-lg bg-app-surface-hover/50 hover:bg-app-surface-hover transition-colors"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}>
-                <div className="flex flex-col items-center justify-center gap-2">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept=".ies"
-                        className="hidden"
-                    />
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-4 py-2 text-sm font-medium text-app-primary bg-app-primary-soft rounded-md hover:bg-app-primary-soft/80 border border-app-primary/20"
-                    >
-                        {file ? 'Change File' : 'Upload IES File'}
-                    </button>
-                    <span className="text-sm text-app-text-muted">
-                        {file ? file.name : 'Drag & drop or click to upload'}
-                    </span>
-                </div>
+            <div className="w-full">
+                <DropZone
+                    onFilesSelected={handleFilesSelected}
+                    acceptedTypes={['.ies']}
+                    maxFiles={1}
+                    title="Upload IES File"
+                    description="Drag & drop or click to browse"
+                    isProcessing={isGenerating}
+                    compact={true}
+                />
+                {file && (
+                    <div className="mt-2 p-2 text-xs bg-app-surface-hover rounded text-app-text-muted border border-app-border">
+                        Selected: <span className="font-semibold text-app-text">{file.name}</span>
+                    </div>
+                )}
             </div>
 
             {/* Mounting & Calc Plane */}

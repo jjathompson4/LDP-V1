@@ -32,17 +32,23 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, isVisible }) =
                     <Key className="h-6 w-6 text-app-primary" />
                 </div>
                 <h2 className="text-2xl font-bold text-app-text mb-2">Enter Your Gemini API Key</h2>
-                <p className="text-app-text-muted mb-6">
-                    To use this application, please provide your own Google Gemini API key. Your key will be saved securely in your browser's local storage.
-                </p>
-                <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Paste your API key here"
-                    className="w-full bg-app-bg border border-app-border rounded-md px-4 py-2.5 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary transition mb-6"
-                />
+                <div className="mb-6">
+                    <label htmlFor="apiKey" className="block text-sm font-medium text-app-text-muted mb-2">
+                        Enter your Google Gemini API Key
+                    </label>
+                    <input
+                        type="password"
+                        id="apiKey"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-full px-4 py-2 bg-app-bg border border-app-border rounded-lg text-app-text focus:outline-none focus:ring-2 focus:ring-app-primary focus:border-transparent transition-all"
+                        placeholder="AIzaSy..."
+                    />
+                    <p className="mt-3 text-xs text-app-text-muted">
+                        This feature uses Google's experimental Gemini 2.0 Flash model. The key is stored locally in your browser and is never sent to our servers.
+                    </p>
+                </div>
                 <button
                     onClick={handleSave}
                     disabled={!apiKey.trim()}

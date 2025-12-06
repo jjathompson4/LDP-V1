@@ -50,6 +50,7 @@ class RenderRequest(BaseModel):
     colormap: str = "jet"
     falsecolorMin: float = 0.0
     falsecolorMax: float = 1000.0
+    theme: str = "light"
 
 class RenderResponse(BaseModel):
     image: str
@@ -136,7 +137,8 @@ async def render_image(req: RenderRequest):
             colorbar = build_colorbar(
                 colormap=req.colormap, 
                 lum_min=req.falsecolorMin, 
-                lum_max=req.falsecolorMax
+                lum_max=req.falsecolorMax,
+                theme=req.theme
             )
         else:
             img_data = tone_map(

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { Fixture, ColumnConfig, SelectedCell } from '../types';
-import { RefreshCw, Trash2, ChevronDown, Table } from 'lucide-react';
+import { RefreshCw, Trash2, ChevronDown, Table2, Settings, Maximize2, Minimize2 } from 'lucide-react';
 import { BulkEditToolbar } from './BulkEditToolbar';
 
 interface ScheduleTableProps {
@@ -14,6 +15,7 @@ interface ScheduleTableProps {
     setColumnWidths: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
     rowHeights: { [key: string]: number };
     setRowHeights: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
+    onOpenSettings: () => void;
 }
 
 const EditableCell: React.FC<{ value: string; onUpdate: (value: string) => void }> = ({ value, onUpdate }) => {
@@ -152,9 +154,11 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     setColumnWidths,
     rowHeights,
     setRowHeights,
+    onOpenSettings,
 }) => {
     const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([]);
     const [selectionAnchor, setSelectionAnchor] = useState<{ fixtureId: string; field: string; rowIndex: number; colIndex: number } | null>(null);
+    const [isMaximized, setIsMaximized] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLTableElement>(null);
     const resizingColumnRef = useRef<string | null>(null);
@@ -325,155 +329,225 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
         e.target.value = '';
     };
 
-    return (
-        <div ref={tableContainerRef} className="relative overflow-x-auto bg-app-surface rounded-2xl shadow-lg border border-app-border">
-            <BulkEditToolbar
-                selectedCells={selectedCells}
-                fixtures={fixtures}
-                onApply={updateMultipleFixtures}
-                onClear={() => setSelectedCells([])}
-                containerRef={tableContainerRef}
-            />
-            <input
-                type="file"
-                ref={reanalyzeInputRef}
-                onChange={handleFileSelect}
-                accept="application/pdf"
-                className="hidden"
-                data-fixture-id=""
-            />
-            <table ref={tableRef} className="w-full text-sm text-left text-app-text-muted" style={{ tableLayout: 'fixed' }}>
-                <colgroup>
-                    {columns.map(header => (
-                        <col key={header.key} style={{ width: columnWidths[header.key] ? `${columnWidths[header.key]}px` : undefined }} />
-                    ))}
-                    <col style={{ width: columnWidths['actions'] ? `${columnWidths['actions']}px` : undefined }} />
-                </colgroup>
-                <thead className="text-xs text-app-text uppercase bg-app-surface-hover">
-                    <tr>
+    const toggleMaximize = () => {
+        setIsMaximized(prev => !prev);
+    };
+
+    const content = (
+        <div
+            ref={tableContainerRef}
+            className={`
+                flex flex-col bg-app-surface shadow-lg border border-app-border overflow-hidden transition-all duration-300
+                ${isMaximized
+                    ? 'fixed inset-0 z-[9999] m-0 rounded-none w-screen h-screen'
+                    : 'relative w-full h-full rounded-2xl'
+                }
+            `}
+        >
+            {/* Header Toolbar */}
+            <div className="flex items-center justify-between p-4 border-b border-app-border bg-app-surface shrink-0">
+                <div className="flex items-center gap-3">
+                    <Table2 className="w-5 h-5 text-app-primary" />
+                    <h3 className="font-semibold text-app-text">Lighting Schedule</h3>
+                    <span className="bg-app-surface-hover px-2 py-0.5 rounded-full text-xs font-medium text-app-text-muted border border-app-border">
+                        {fixtures.length} fixtures
+                    </span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onOpenSettings}
+                        className="p-2 text-app-text-muted hover:text-app-text hover:bg-app-surface-hover rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                        title="Configure Columns"
+                    >
+                        <Settings className="w-4 h-4" />
+                        <span className="hidden sm:inline">Settings</span>
+                    </button>
+                    <div className="w-px h-4 bg-app-border mx-1"></div>
+                    <button
+                        onClick={toggleMaximize}
+                        className={`
+                            p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium
+                            ${isMaximized
+                                ? 'bg-app-primary text-white hover:bg-app-primary-hover shadow-md'
+                                : 'text-app-text-muted hover:text-app-text hover:bg-app-surface-hover'
+                            }
+                        `}
+                        title={isMaximized ? "Exit Focus Mode" : "Maximize (Focus Mode)"}
+                    >
+                        {isMaximized ? (
+                            <>
+                                <Minimize2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Exit Focus</span>
+                            </>
+                        ) : (
+                            <>
+                                <Maximize2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Focus Mode</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-auto relative bg-app-surface/30">
+                <BulkEditToolbar
+                    selectedCells={selectedCells}
+                    fixtures={fixtures}
+                    onApply={updateMultipleFixtures}
+                    onClear={() => setSelectedCells([])}
+                    containerRef={tableContainerRef}
+                />
+                <input
+                    type="file"
+                    ref={reanalyzeInputRef}
+                    onChange={handleFileSelect}
+                    accept="application/pdf"
+                    className="hidden"
+                    data-fixture-id=""
+                />
+                <table ref={tableRef} className="w-full text-sm text-left text-app-text-muted" style={{ tableLayout: 'fixed' }}>
+                    <colgroup>
                         {columns.map(header => (
-                            <th key={header.key} scope="col" data-key={header.key} className="relative px-4 py-3 border-r border-app-border">
+                            <col key={header.key} style={{ width: columnWidths[header.key] ? `${columnWidths[header.key]}px` : undefined }} />
+                        ))}
+                        <col style={{ width: columnWidths['actions'] ? `${columnWidths['actions']}px` : undefined }} />
+                    </colgroup>
+                    <thead className="text-xs text-app-text uppercase bg-app-surface-hover">
+                        <tr>
+                            {columns.map(header => (
+                                <th key={header.key} scope="col" data-key={header.key} className="relative px-4 py-3 border-r border-app-border">
+                                    <div className="flex items-center">
+                                        <span>{header.label}</span>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, String(header.key))}
+                                            title={`Resize ${header.label} column`}
+                                            className="absolute top-0 right-[-8px] h-full w-4 cursor-col-resize z-10 group"
+                                        >
+                                            <div className="w-px h-full bg-transparent group-hover:bg-app-primary transition-colors mx-auto"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                            ))}
+                            <th scope="col" data-key="actions" className="relative px-4 py-3">
                                 <div className="flex items-center">
-                                    <span>{header.label}</span>
+                                    <span>Actions</span>
                                     <div
-                                        onMouseDown={(e) => handleMouseDown(e, String(header.key))}
-                                        title={`Resize ${header.label} column`}
+                                        onMouseDown={(e) => handleMouseDown(e, 'actions')}
+                                        title="Resize Actions column"
                                         className="absolute top-0 right-[-8px] h-full w-4 cursor-col-resize z-10 group"
                                     >
                                         <div className="w-px h-full bg-transparent group-hover:bg-app-primary transition-colors mx-auto"></div>
                                     </div>
                                 </div>
                             </th>
-                        ))}
-                        <th scope="col" data-key="actions" className="relative px-4 py-3">
-                            <div className="flex items-center">
-                                <span>Actions</span>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'actions')}
-                                    title="Resize Actions column"
-                                    className="absolute top-0 right-[-8px] h-full w-4 cursor-col-resize z-10 group"
-                                >
-                                    <div className="w-px h-full bg-transparent group-hover:bg-app-primary transition-colors mx-auto"></div>
-                                </div>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {fixtures.length > 0 ? (
-                        fixtures.map((fixture, rowIndex) => {
-                            const fixtureId = fixture.id;
-                            return (
-                                <tr
-                                    key={fixtureId}
-                                    className="bg-app-surface border-b border-app-border hover:bg-app-surface-hover"
-                                >
-                                    {columns.map((header, colIndex) => {
-                                        const field = header.key;
-                                        const isSelected = isCellSelected(fixtureId, String(field));
-                                        const options = fixture[`${field}Options` as keyof Fixture] as string[] | undefined;
-                                        const hasOptions = Array.isArray(options) && options.length > 0;
-
-                                        return (
-                                            <td
-                                                key={field}
-                                                className={`relative p-0 border-r border-app-border align-top ${isSelected ? 'bg-app-primary-soft ring-1 ring-app-primary z-[5]' : ''}`}
-                                                onMouseDown={(e) => handleCellMouseDown(e, fixtureId, String(field), rowIndex, colIndex)}
-                                                data-cell-id={`${fixtureId}-${field}`}
-                                                style={{
-                                                    height: rowHeights[fixtureId] ? `${rowHeights[fixtureId]}px` : '60px',
-                                                    overflow: 'visible'
-                                                }}
-                                            >
-                                                {hasOptions ? (
-                                                    <EditableDropdownCell
-                                                        value={String(fixture[field] ?? '')}
-                                                        options={options}
-                                                        onUpdate={(value) => updateFixture(fixtureId, String(field), value)}
-                                                    />
-                                                ) : (
-                                                    <EditableCell
-                                                        value={String(fixture[field] ?? '')}
-                                                        onUpdate={(value) => updateFixture(fixtureId, String(field), value)}
-                                                    />
-                                                )}
-                                                <div
-                                                    onMouseDown={(e) => handleRowMouseDown(e, fixture.id)}
-                                                    title="Resize row"
-                                                    className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
-                                                >
-                                                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
-                                                </div>
-                                            </td>
-                                        );
-                                    })}
-                                    <td
-                                        className="relative p-2 align-top z-[15]"
-                                        style={{
-                                            height: rowHeights[fixture.id] ? `${rowHeights[fixture.id]}px` : '60px',
-                                            overflow: 'visible'
-                                        }}
-                                    >
-                                        <div className="flex items-center justify-end w-full gap-1">
-                                            <button
-                                                onClick={() => handleReanalyzeClick(fixture.id)}
-                                                className="p-1.5 rounded-md text-app-text-muted hover:text-app-primary hover:bg-app-surface-hover transition-colors"
-                                                title="Re-analyze with a new PDF"
-                                            >
-                                                <RefreshCw className="w-5 h-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => deleteFixture(fixture.id)}
-                                                className="p-1.5 rounded-md text-app-text-muted hover:text-app-error hover:bg-app-surface-hover transition-colors"
-                                                title="Delete Fixture"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                        <div
-                                            onMouseDown={(e) => handleRowMouseDown(e, fixture.id)}
-                                            title="Resize row"
-                                            className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
-                                        >
-                                            <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })
-                    ) : (
-                        <tr>
-                            <td colSpan={columns.length + 1} className="p-4 border-b border-app-border">
-                                <div className="text-center py-12 px-6 bg-app-surface-hover rounded-lg border-2 border-dashed border-app-border">
-                                    <Table className="w-12 h-12 mx-auto text-app-text-muted" />
-                                    <h3 className="mt-4 text-xl font-semibold text-app-text">No Fixtures Yet</h3>
-                                    <p className="mt-1 text-app-text-muted">Upload product data sheets to begin building your schedule.</p>
-                                </div>
-                            </td>
                         </tr>
-                    )}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {fixtures.length > 0 ? (
+                            fixtures.map((fixture, rowIndex) => {
+                                const fixtureId = fixture.id;
+                                return (
+                                    <tr
+                                        key={fixtureId}
+                                        className="bg-app-surface border-b border-app-border hover:bg-app-surface-hover"
+                                    >
+                                        {columns.map((header, colIndex) => {
+                                            const field = header.key;
+                                            const isSelected = isCellSelected(fixtureId, String(field));
+                                            const options = fixture[`${field}Options` as keyof Fixture] as string[] | undefined;
+                                            const hasOptions = Array.isArray(options) && options.length > 0;
+
+                                            return (
+                                                <td
+                                                    key={field}
+                                                    className={`relative p-0 border-r border-app-border align-top ${isSelected ? 'bg-app-primary-soft ring-1 ring-app-primary z-[5]' : ''}`}
+                                                    onMouseDown={(e) => handleCellMouseDown(e, fixtureId, String(field), rowIndex, colIndex)}
+                                                    data-cell-id={`${fixtureId}-${field}`}
+                                                    style={{
+                                                        height: rowHeights[fixtureId] ? `${rowHeights[fixtureId]}px` : '60px',
+                                                        overflow: 'visible'
+                                                    }}
+                                                >
+                                                    {hasOptions ? (
+                                                        <EditableDropdownCell
+                                                            value={String(fixture[field] ?? '')}
+                                                            options={options}
+                                                            onUpdate={(value) => updateFixture(fixtureId, String(field), value)}
+                                                        />
+                                                    ) : (
+                                                        <EditableCell
+                                                            value={String(fixture[field] ?? '')}
+                                                            onUpdate={(value) => updateFixture(fixtureId, String(field), value)}
+                                                        />
+                                                    )}
+                                                    <div
+                                                        onMouseDown={(e) => handleRowMouseDown(e, fixture.id)}
+                                                        title="Resize row"
+                                                        className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
+                                                    >
+                                                        <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
+                                                    </div>
+                                                </td>
+                                            );
+                                        })}
+                                        <td
+                                            className="relative p-2 align-top z-[15]"
+                                            style={{
+                                                height: rowHeights[fixture.id] ? `${rowHeights[fixture.id]}px` : '60px',
+                                                overflow: 'visible'
+                                            }}
+                                        >
+                                            <div className="flex items-center justify-end w-full gap-1">
+                                                <button
+                                                    onClick={() => handleReanalyzeClick(fixture.id)}
+                                                    className="p-1.5 rounded-md text-app-text-muted hover:text-app-primary hover:bg-app-surface-hover transition-colors"
+                                                    title="Re-analyze with a new PDF"
+                                                >
+                                                    <RefreshCw className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteFixture(fixture.id)}
+                                                    className="p-1.5 rounded-md text-app-text-muted hover:text-app-error hover:bg-app-surface-hover transition-colors"
+                                                    title="Delete Fixture"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                            <div
+                                                onMouseDown={(e) => handleRowMouseDown(e, fixture.id)}
+                                                title="Resize row"
+                                                className="absolute bottom-[-8px] left-0 w-full h-4 cursor-row-resize z-20 group"
+                                            >
+                                                <div className="absolute top-1/2 -translate-y-1/2 w-full h-px bg-transparent group-hover:bg-app-primary transition-colors"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        ) : (
+                            <tr>
+                                <td colSpan={columns.length + 1} className="p-4 border-b border-app-border">
+                                    <div className="text-center py-12 px-6 bg-app-surface-hover rounded-lg border-2 border-dashed border-app-border">
+                                        <Table2 className="w-12 h-12 mx-auto text-app-text-muted" />
+                                        <div className="mt-4 flex flex-col items-center gap-3">
+                                            <div className="text-center">
+                                                <h3 className="text-xl font-semibold text-app-text">No Fixtures Yet</h3>
+                                                <p className="mt-1 text-app-text-muted">Upload product data sheets to begin building your schedule.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
+
+    if (isMaximized) {
+        return createPortal(content, document.body);
+    }
+
+    return content;
 };

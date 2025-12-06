@@ -124,64 +124,88 @@ def crop_region(hdr: np.ndarray, x0: int, y0: int, x1: int, y1: int) -> np.ndarr
     return hdr[ymin:ymax, xmin:xmax]
 
 
-def build_colorbar(colormap: str, lum_min: float, lum_max: float, width: int = 2000, height: int = 100) -> str:
+def build_colorbar(colormap: str, lum_min: float, lum_max: float, width: int = 2000, height: int = 120, theme: str = "light") -> str:
     gradient = np.linspace(0, 1, width, dtype=np.float32)
     cmap = cm.get_cmap(colormap)
     color_row = (cmap(gradient)[..., :3] * 255).astype(np.uint8)
 
+    # Fully transparent background to respect frontend theme
     background = np.zeros((height, width, 4), dtype=np.uint8)
-    bar_height = 30
-    padding = 60  # Increased padding
+
+    # Determine Text/Line Color based on theme
+    if theme == "dark":
+        text_color = (255, 255, 255, 255) # White
+        line_color = (255, 255, 255, 255) # White
+    else:
+        text_color = (0, 0, 0, 255) # Black
+        line_color = (0, 0, 0, 255) # Black
+
+    bar_height = 40
+    padding = 80
     
-    # Draw gradient bar ONLY within padding
-    # The gradient should span from x=padding to x=width-padding
+    # Draw gradient bar
     active_width = width - 2 * padding
     if active_width < 1: active_width = 1
     
-    # Resize color_row to active_width
-    # We can use cv2.resize or just simple indexing if we generated it correctly
-    # Let's regenerate gradient for the active width
     gradient_active = np.linspace(0, 1, active_width, dtype=np.float32)
     color_row_active = (cmap(gradient_active)[..., :3] * 255).astype(np.uint8)
     
-    for y in range(bar_height):
+    track_top = 20
+    track_bottom = track_top + bar_height
+
+    for y in range(track_top, track_bottom):
         background[y, padding:padding+active_width, :3] = color_row_active
         background[y, padding:padding+active_width, 3] = 255
 
     img = Image.fromarray(background, mode='RGBA')
     draw = ImageDraw.Draw(img)
     
-    # Use larger font
-    try:
-        font = ImageFont.truetype("Arial", 16)
-    except IOError:
-        font = ImageFont.load_default()
+    # Try multiple fonts to find a decent one
+    font = None
+    font_candidates = [
+        ("Arial.ttf", 24),
+        ("DejaVuSans.ttf", 24),
+        ("LiberationSans-Regular.ttf", 24),
+        ("FreeSans.ttf", 24),
+        ("arial.ttf", 24)
+    ]
+    
+    for font_name, size in font_candidates:
+        try:
+            font = ImageFont.truetype(font_name, size)
+            break
+        except IOError:
+            continue
+            
+    if font is None:
+        try:
+            # Fallback to default but it will be small
+            font = ImageFont.load_default()
+        except:
+            pass
 
-    # Calculate tick positions
-    # Ticks should align with the start and end of the gradient
+    # Tick positions
     tick_positions = np.linspace(padding, width - padding, 5)
     tick_values = np.linspace(lum_min, lum_max, 5)
 
-    track_top = bar_height
-    track_bottom = track_top + 10
-    
     for pos, value in zip(tick_positions, tick_values):
         x = int(pos)
         # Draw tick mark
-        draw.line([(x, track_top), (x, track_bottom)], fill=(200, 200, 200, 255), width=2)
+        draw.line([(x, track_bottom), (x, track_bottom + 10)], fill=line_color, width=3)
         
         label = f"{value:.1f}"
-        bbox = draw.textbbox((0, 0), label, font=font)
-        text_width = bbox[2] - bbox[0]
         
-        # Center text on tick
-        text_x = x - text_width // 2
+        # Calculate text position
+        text_x = x
+        text_y = track_bottom + 15
         
-        # Ensure text doesn't go off edge (though padding should prevent this now)
-        if text_x < 0: text_x = 0
-        if text_x + text_width > width: text_x = width - text_width
-        
-        draw.text((text_x, track_bottom + 5), label, fill=(245, 247, 253, 255), font=font)
+        if font:
+            bbox = draw.textbbox((0, 0), label, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_x = x - text_width // 2
+            
+            # Draw text
+            draw.text((text_x, text_y), label, fill=text_color, font=font)
 
     return encode_png(np.array(img))
 

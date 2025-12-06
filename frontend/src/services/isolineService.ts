@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { api } from '../lib/api';
 
 export interface IsolineLevel {
     value: number;
@@ -67,21 +65,29 @@ const submitForm = (url: string, data: any) => {
     document.body.removeChild(form);
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export const isolineService = {
     compute: async (file: File, params: ComputeRequest) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('params', JSON.stringify(params));
 
-        const response = await axios.post<ComputeResponse>(`${API_URL}/isoline/compute`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+        // Using api.upload is not sufficient here because we have extra fields 'params'
+        // But api.post accepts FormData if we construct it, or we can use our helper.
+        // Our helper only takes 'file'. Let's use api.post directly with FormData.
+
+        return api.post<ComputeResponse>('/isoline/compute', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
-        return response.data;
     },
 
     exportPdf: async (isolineData: ComputeResponse, options: ExportOptions) => {
+        // Keep using submitForm for file download behavior which is often handled differently than AJAX
+        // Or if the backend returns a blob, we could use api.post and save it.
+        // The original implementation used a form submit to open in new tab/download. 
+        // Let's preserve that behavior as requested ("DO NOT change the core UX flows").
+        // We just need to make sure the URL is correct.
         submitForm(`${API_URL}/isoline/export-pdf`, { isolineData, options });
     },
 

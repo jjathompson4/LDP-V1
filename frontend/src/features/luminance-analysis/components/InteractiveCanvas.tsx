@@ -40,48 +40,50 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     const [scale, setScale] = useState({ x: 1, y: 1 });
 
     // Update scale when image loads or window resizes
-    const updateScale = useCallback(() => {
+
+
+    const safeUpdateScale = useCallback(() => {
         if (containerRef.current && width && height) {
             const rect = containerRef.current.getBoundingClientRect();
-            // The image is contained, so we need to calculate the actual displayed dimensions
             const aspect = width / height;
             const containerAspect = rect.width / rect.height;
-
             let displayWidth, displayHeight;
 
             if (containerAspect > aspect) {
-                // Height constrained
                 displayHeight = rect.height;
                 displayWidth = displayHeight * aspect;
             } else {
-                // Width constrained
                 displayWidth = rect.width;
                 displayHeight = displayWidth / aspect;
             }
+
+            if (displayWidth === 0 || displayHeight === 0) return;
 
             setScale({
                 x: width / displayWidth,
                 y: height / displayHeight,
             });
 
-            // Resize canvas to match display size
             if (canvasRef.current) {
                 canvasRef.current.width = displayWidth;
                 canvasRef.current.height = displayHeight;
-                drawOverlay();
             }
         }
     }, [width, height]);
 
+
     useEffect(() => {
-        window.addEventListener('resize', updateScale);
-        // Initial update after a short delay to allow layout to settle
-        const timer = setTimeout(updateScale, 100);
+        window.addEventListener('resize', safeUpdateScale);
+        safeUpdateScale();
+        // Add a few retries for initial layout
+        const t1 = setTimeout(safeUpdateScale, 100);
+        const t2 = setTimeout(safeUpdateScale, 500);
         return () => {
-            window.removeEventListener('resize', updateScale);
-            clearTimeout(timer);
+            window.removeEventListener('resize', safeUpdateScale);
+            clearTimeout(t1);
+            clearTimeout(t2);
         };
-    }, [updateScale]);
+    }, [safeUpdateScale]);
 
     // Draw overlay whenever tags or drag state changes
     const drawOverlay = useCallback(() => {
@@ -108,10 +110,18 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
             ctx.fill();
+
+            // Draw label with background for readability
+            const text = tag.value.toFixed(1);
+            const tm = ctx.measureText(text);
+            const tw = tm.width;
+            const th = 12; // approx
+
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(pos.x + 6, pos.y - 14, tw + 4, th + 4);
+
             ctx.fillStyle = 'white';
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.strokeText(tag.value.toFixed(1), pos.x + 8, pos.y - 4);
-            ctx.fillText(tag.value.toFixed(1), pos.x + 8, pos.y - 4);
+            ctx.fillText(text, pos.x + 8, pos.y - 4);
         });
 
         // Draw ROI Tags
@@ -126,10 +136,16 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
             ctx.strokeStyle = 'rgba(90, 169, 248, 0.9)';
             ctx.strokeRect(x, y, w, h);
 
+            // Draw label with background
+            const text = tag.value.toFixed(1);
+            const tm = ctx.measureText(text);
+            const tw = tm.width;
+
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(x + w + 2, y + h - 12, tw + 4, 16);
+
             ctx.fillStyle = 'white';
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.strokeText(tag.value.toFixed(1), x + w + 4, y + h);
-            ctx.fillText(tag.value.toFixed(1), x + w + 4, y + h);
+            ctx.fillText(text, x + w + 4, y + h);
         });
 
         // Draw Drag Rect
@@ -157,16 +173,21 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     const getCoords = (e: React.MouseEvent) => {
         if (!canvasRef.current) return { x: 0, y: 0 };
         const rect = canvasRef.current.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * scale.x;
-        const y = (e.clientY - rect.top) * scale.y;
+        // Limit x,y to bounds
+        const clientX = Math.max(rect.left, Math.min(rect.right, e.clientX));
+        const clientY = Math.max(rect.top, Math.min(rect.bottom, e.clientY));
+
+        const x = (clientX - rect.left) * scale.x;
+        const y = (clientY - rect.top) * scale.y;
         return {
-            x: Math.max(0, Math.min(width - 1, x)),
-            y: Math.max(0, Math.min(height - 1, y))
+            x: Math.max(0, Math.min(width - 0.1, x)),
+            y: Math.max(0, Math.min(height - 0.1, y))
         };
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation(); // prevent drag issues
         const coords = getCoords(e);
         setIsDragging(true);
         setDragStart(coords);
@@ -178,15 +199,20 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
         setDragCurrent(getCoords(e));
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         if (!isDragging || !dragStart || !dragCurrent) return;
         setIsDragging(false);
 
-        const dx = Math.abs(dragCurrent.x - dragStart.x);
-        const dy = Math.abs(dragCurrent.y - dragStart.y);
-        const dist = Math.hypot(dx, dy);
+        // Calculate distance in SCREEN pixels to differentiate click vs drag
+        const startScreen = { x: dragStart.x / scale.x, y: dragStart.y / scale.y };
+        const curScreen = { x: dragCurrent.x / scale.x, y: dragCurrent.y / scale.y };
+        const dist = Math.hypot(curScreen.x - startScreen.x, curScreen.y - startScreen.y);
 
-        if (dist < 5 * scale.x) { // Threshold for click vs drag
+        if (dist < 5) { // 5 screen pixels tolerance
+            // Use dragStart for click coordinate
             onPixelSelect(dragStart.x, dragStart.y);
         } else {
             onRoiSelect({
@@ -203,17 +229,26 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-center justify-center bg-app-bg overflow-hidden rounded-lg border border-app-border"
+            className="relative w-full h-full flex items-center justify-center bg-transparent overflow-hidden"
         >
             <img
                 src={imageSrc}
                 alt="Analysis"
                 className="max-w-full max-h-full object-contain pointer-events-none select-none"
-                onLoad={updateScale}
+                onLoad={safeUpdateScale}
             />
             <canvas
                 ref={canvasRef}
-                className="absolute inset-0 m-auto cursor-crosshair touch-none"
+                className="absolute m-auto cursor-crosshair touch-none"
+                style={{
+                    // Centered automatically by m-auto + absolute inset-0 logic? 
+                    // No, usually needs inset-0 for m-auto to work or explicit positioning.
+                    // But here we rely on width/height matching the image.
+                    // Let's use left/top/transform approach or just inset-0 if dimensions match.
+                    // Since we set width/height on canvas to match displayed image,
+                    // we can just center it.
+                    pointerEvents: 'auto'
+                }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}

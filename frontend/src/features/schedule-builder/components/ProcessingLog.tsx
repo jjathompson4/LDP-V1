@@ -42,7 +42,8 @@ export const ProcessingLog: React.FC<ProcessingLogProps> = ({ files, isProcessin
                                     <span className="font-medium text-app-text truncate pr-4">{file.name}</span>
                                     <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${file.status === 'success' ? 'bg-app-success/20 text-app-success' :
                                         file.status === 'error' ? 'bg-app-error/20 text-app-error' :
-                                            'bg-app-border text-app-text-muted'
+                                            file.status === 'processing' ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' :
+                                                'bg-app-border text-app-text-muted'
                                         }`}>
                                         {file.status}
                                     </span>
