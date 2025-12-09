@@ -7,10 +7,10 @@ const InstructionsPanel: React.FC = () => {
             <ol className="list-decimal list-inside text-sm text-app-text-muted space-y-1">
                 <li>Upload an IES file and configure settings.</li>
                 <li>Set isoline values and colors.</li>
-                <li>Click <strong>Generate Isolines</strong>.</li>
+                <li>Click <strong>Preview Isolines</strong>.</li>
                 <li>Export as PDF (recommended) or PNG.</li>
                 <li>In Bluebeam, open your drawing and the exported file.</li>
-                <li>Snapshot the isolines and paste onto your drawing.</li>
+                <li>Snapshot (Hotkey: G) the isolines and paste onto your drawing.</li>
                 <li>Use the scale bar to calibrate and align.</li>
             </ol>
 
