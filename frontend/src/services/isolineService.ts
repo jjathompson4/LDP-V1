@@ -38,6 +38,7 @@ export interface ComputeResponse {
     levels: IsolineLevelResult[];
 }
 
+
 export interface ExportOptions {
     format: 'pdf' | 'png';
     includeScaleBar: boolean;
@@ -46,6 +47,7 @@ export interface ExportOptions {
     includeGrid: boolean;
     scaleBarLength: number;
     gridSpacing?: number | null;
+    fileName?: string;
 }
 
 const submitForm = (url: string, data: any) => {

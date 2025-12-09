@@ -3,6 +3,9 @@ import type { ComputeResponse, ExportOptions } from '../../../services/isolineSe
 
 interface ExportPanelProps {
     data: ComputeResponse | null;
+    onGenerate: () => void;
+    isFileSelected: boolean;
+    isGenerating: boolean;
     onExportPdf: (options: ExportOptions) => void;
     onExportPng: (options: ExportOptions) => void;
     isExporting: boolean;
@@ -19,6 +22,9 @@ interface ExportPanelProps {
 
 const ExportPanel: React.FC<ExportPanelProps> = ({
     data,
+    onGenerate,
+    isFileSelected,
+    isGenerating,
     onExportPdf,
     onExportPng,
     isExporting,
@@ -60,18 +66,28 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         <div className="bg-app-surface p-4 rounded-lg shadow-sm border border-app-border flex flex-col gap-4">
             <h3 className="text-md font-semibold text-app-text border-b border-app-border pb-2">Export Isolines</h3>
 
+            {/* Generate Button (Moved here) */}
+            <button
+                onClick={onGenerate}
+                disabled={isGenerating || !isFileSelected}
+                className="w-full py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+            >
+                {isGenerating ? 'Previewing...' : 'Preview Isolines'}
+            </button>
+
+            {/* Export Buttons */}
             <div className="flex gap-2">
                 <button
                     onClick={handlePdf}
                     disabled={!data || isExporting}
-                    className="flex-1 py-2 bg-app-surface hover:bg-app-surface-hover text-app-primary border border-app-border rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
                 >
                     {isExporting ? 'Exporting...' : 'Export PDF'}
                 </button>
                 <button
                     onClick={handlePng}
                     disabled={!data || isExporting}
-                    className="flex-1 py-2 bg-app-surface hover:bg-app-surface-hover text-app-primary border border-app-border rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
                 >
                     {isExporting ? 'Exporting...' : 'Export PNG'}
                 </button>

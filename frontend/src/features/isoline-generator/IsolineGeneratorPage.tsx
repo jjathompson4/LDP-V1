@@ -7,13 +7,17 @@ import ExportPanel from './components/ExportPanel';
 import { isolineService } from '../../services/isolineService';
 import type { ComputeRequest, ComputeResponse, ExportOptions } from '../../services/isolineService';
 
+
 const IsolineGeneratorPage: React.FC = () => {
+    const inputPanelRef = React.useRef<any>(null); // Ideally import InputPanelHandle but this works
+    const [file, setFile] = React.useState<File | null>(null);
     const [computeData, setComputeData] = useState<ComputeResponse | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [scaleBarLength, setScaleBarLength] = useState<number>(50);
     const [gridSize, setGridSize] = useState<number | null>(null);
+    const [fileName, setFileName] = useState<string>('isolines');
 
     // Export Options State
     const [includeScaleBar, setIncludeScaleBar] = useState(true);
@@ -21,11 +25,34 @@ const IsolineGeneratorPage: React.FC = () => {
     const [includeDisclaimer, setIncludeDisclaimer] = useState(true);
     const [includeGrid, setIncludeGrid] = useState(true);
 
-    const handleGenerate = async (file: File, params: ComputeRequest) => {
+    const triggerGenerate = () => {
+        if (!file) {
+            setError('Please upload an IES file.');
+            return;
+        }
+
+        const { params, error: paramError } = inputPanelRef.current?.getParams() || { params: null, error: 'Internal error' };
+
+        if (paramError) {
+            setError(paramError);
+            return;
+        }
+
+        if (params) {
+            handleGenerate(file, params);
+        }
+    };
+
+    const handleGenerate = async (uploadedFile: File, params: ComputeRequest) => {
         setIsGenerating(true);
         setError(null);
+
+        // Extract filename without extension for export naming
+        const name = uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || uploadedFile.name;
+        setFileName(name);
+
         try {
-            const data = await isolineService.compute(file, params);
+            const data = await isolineService.compute(uploadedFile, params);
             setComputeData(data);
             // Update default scale bar length based on units if needed, or keep user preference?
             // Let's keep user preference but maybe reset if units change? 
@@ -53,7 +80,8 @@ const IsolineGeneratorPage: React.FC = () => {
                 includeLabels,
                 includeDisclaimer,
                 includeGrid,
-                gridSpacing: includeGrid ? gridSize : undefined
+                gridSpacing: includeGrid ? gridSize : undefined,
+                fileName: fileName // Pass the filename
             };
             await isolineService.exportPdf(computeData, finalOptions);
         } catch (err) {
@@ -75,7 +103,8 @@ const IsolineGeneratorPage: React.FC = () => {
                 includeLabels,
                 includeDisclaimer,
                 includeGrid,
-                gridSpacing: includeGrid ? gridSize : undefined
+                gridSpacing: includeGrid ? gridSize : undefined,
+                fileName: fileName // Pass the filename
             };
             await isolineService.exportPng(computeData, finalOptions);
         } catch (err) {
@@ -103,7 +132,10 @@ const IsolineGeneratorPage: React.FC = () => {
                 {/* Left Column: Input */}
                 <div className="w-80 flex-shrink-0 flex flex-col gap-4">
                     <InputPanel
-                        onGenerate={handleGenerate}
+                        ref={inputPanelRef}
+                        file={file}
+                        setFile={setFile}
+                        onError={setError}
                         isGenerating={isGenerating}
                         scaleBarLength={scaleBarLength}
                         setScaleBarLength={setScaleBarLength}
@@ -135,9 +167,11 @@ const IsolineGeneratorPage: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <InstructionsPanel />
                         <ExportPanel
                             data={computeData}
+                            onGenerate={triggerGenerate}
+                            isFileSelected={!!file}
+                            isGenerating={isGenerating}
                             onExportPdf={handleExportPdf}
                             onExportPng={handleExportPng}
                             isExporting={isExporting}
@@ -151,6 +185,7 @@ const IsolineGeneratorPage: React.FC = () => {
                             includeGrid={includeGrid}
                             setIncludeGrid={setIncludeGrid}
                         />
+                        <InstructionsPanel />
                     </div>
                 </div>
             </div>

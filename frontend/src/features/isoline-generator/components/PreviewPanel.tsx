@@ -96,6 +96,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         const lines = [];
         const strokeWidth = width * 0.001;
 
+
         // Vertical lines
         const startX = Math.floor(minX / gridSize) * gridSize;
         for (let x = startX; x <= maxX; x += gridSize) {
@@ -104,7 +105,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     key={`v${x}`}
                     x1={x} y1={minY}
                     x2={x} y2={maxY}
-                    className="stroke-app-border"
+                    className="stroke-app-text/30"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
                 />
@@ -119,7 +120,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     key={`h${y}`}
                     x1={minX} y1={y}
                     x2={maxX} y2={y}
-                    className="stroke-app-border"
+                    className="stroke-app-text/30"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
                 />
@@ -207,7 +208,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
                     {/* Scale Bar (Bottom Left of data) */}
                     {includeScaleBar && (
-                        <g transform={`translate(${minX + width * 0.05}, ${minY + height * 0.05})`}>
+                        <g transform={`translate(${minX + width * 0.05}, ${maxY - height * 0.05})`}>
                             <line x1={0} y1={0} x2={scaleBarLength} y2={0} className="stroke-app-text" strokeWidth={width * 0.004} />
                             <text x={0} y={width * 0.02} fontSize={width * 0.02} className="fill-app-text">{scaleBarLength} {data.units}</text>
                         </g>

@@ -57,6 +57,7 @@ class ComputeResponse(BaseModel):
     scaleBar: Dict[str, object]
     levels: List[IsolineLevelResult]
 
+
 class ExportOptions(BaseModel):
     format: str = "pdf"
     includeScaleBar: bool = True
@@ -65,6 +66,7 @@ class ExportOptions(BaseModel):
     includeGrid: bool = False
     scaleBarLength: float = 50.0
     gridSpacing: Optional[float] = None
+    fileName: Optional[str] = None
 
 class ExportPdfRequest(BaseModel):
     isolineData: ComputeResponse
@@ -477,9 +479,10 @@ async def export_pdf(body: str = Form(...)):
         
         c.scale(scale, scale)
         
+
         # Draw Grid if requested
         if req.options.includeGrid and req.options.gridSpacing:
-            c.setStrokeColorRGB(0.8, 0.8, 0.8) # Light gray
+            c.setStrokeColorRGB(0.5, 0.5, 0.5) # Darker gray (#808080)
             c.setLineWidth(0.5 / scale) # Thin line
             c.setDash([1 / scale, 2 / scale]) # Dotted
             
@@ -567,8 +570,19 @@ async def export_pdf(body: str = Form(...)):
         c.save()
         
         buffer.seek(0)
+
+        buffer.seek(0)
         from fastapi.responses import StreamingResponse
-        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": "attachment; filename=isolines.pdf"})
+        
+        # Determine filename
+        download_name = "isolines.pdf"
+        if req.options.fileName:
+            # Sanitize filename: allow alphanumeric, spaces, dashes, underscores, dots
+            safe_name = re.sub(r'[^\w\s\-\.]', '', req.options.fileName).strip()
+            if safe_name:
+                download_name = f"{safe_name}.pdf"
+                
+        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": f"attachment; filename={download_name}"})
         
     except Exception as e:
         print(f"PDF Export Error: {e}")
@@ -603,8 +617,9 @@ async def export_png(body: str = Form(...)):
                     x_lines.append(x)
                 x += spacing
                 
+
             if x_lines:
-                ax.vlines(x_lines, extents["minY"], extents["maxY"], colors='#cccccc', linestyles=':', linewidth=0.5)
+                ax.vlines(x_lines, extents["minY"], extents["maxY"], colors='#808080', linestyles=':', linewidth=0.5)
                 
             # Horizontal lines
             start_y = (int(extents["minY"] / spacing)) * spacing
@@ -615,8 +630,9 @@ async def export_png(body: str = Form(...)):
                     y_lines.append(y)
                 y += spacing
                 
+
             if y_lines:
-                ax.hlines(y_lines, extents["minX"], extents["maxX"], colors='#cccccc', linestyles=':', linewidth=0.5)
+                ax.hlines(y_lines, extents["minX"], extents["maxX"], colors='#808080', linestyles=':', linewidth=0.5)
 
         for level in req.isolineData.levels:
             color = level.color
@@ -647,7 +663,7 @@ async def export_png(body: str = Form(...)):
         # Scale Bar
         sb_len = req.options.scaleBarLength
         sb_x = extents["minX"] + (extents["maxX"] - extents["minX"]) * 0.1
-        sb_y = extents["minY"] + (extents["maxY"] - extents["minY"]) * 0.1
+        sb_y = extents["minY"] + (extents["maxY"] - extents["minY"]) * 0.05
         ax.plot([sb_x, sb_x + sb_len], [sb_y, sb_y], 'k-', linewidth=2)
         ax.text(sb_x, sb_y + 1, f"{sb_len} {req.isolineData.units}", color='black')
         
@@ -660,8 +676,19 @@ async def export_png(body: str = Form(...)):
         plt.close(fig)
         
         buffer.seek(0)
+
+        buffer.seek(0)
         from fastapi.responses import StreamingResponse
-        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": "attachment; filename=isolines.png"})
+        
+        # Determine filename
+        download_name = "isolines.png"
+        if req.options.fileName:
+            # Sanitize filename
+            safe_name = re.sub(r'[^\w\s\-\.]', '', req.options.fileName).strip()
+            if safe_name:
+                download_name = f"{safe_name}.png"
+                
+        return StreamingResponse(buffer, media_type="application/octet-stream", headers={"Content-Disposition": f"attachment; filename={download_name}"})
         
     except Exception as e:
         print(f"PNG Export Error: {e}")

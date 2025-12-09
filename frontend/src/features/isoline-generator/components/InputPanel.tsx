@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import type { ComputeRequest, IsolineLevel } from '../../../services/isolineService';
 import { DropZone } from '../../../components/shared/DropZone';
 
+export interface InputPanelHandle {
+    getParams: () => { params: ComputeRequest | null; error: string | null };
+}
+
 interface InputPanelProps {
-    onGenerate: (file: File, params: ComputeRequest) => void;
+    file: File | null;
+    setFile: (file: File | null) => void;
+    onError: (error: string | null) => void;
     isGenerating: boolean;
     scaleBarLength: number;
     setScaleBarLength: (val: number) => void;
@@ -12,16 +19,17 @@ interface InputPanelProps {
     setGridSize: (size: number | null) => void;
 }
 
-const InputPanel: React.FC<InputPanelProps> = ({
-    onGenerate,
+const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
+    file,
+    setFile,
+    onError,
     isGenerating,
     scaleBarLength,
     setScaleBarLength,
     units: currentUnits,
     gridSize,
     setGridSize
-}) => {
-    const [file, setFile] = useState<File | null>(null);
+}, ref) => {
     const [units, setUnits] = useState<'ft' | 'm'>('ft');
     const [mh, setMh] = useState<number>(25);
     const [calcPlane, setCalcPlane] = useState<number>(0);
@@ -34,12 +42,36 @@ const InputPanel: React.FC<InputPanelProps> = ({
         { value: 0.5, color: '#00ff00' },
         { value: 1.0, color: '#ff0000' },
     ]);
-    const [error, setError] = useState<string | null>(null);
+
+    useImperativeHandle(ref, () => ({
+        getParams: () => {
+            if (isoLevels.length === 0) {
+                return { params: null, error: 'At least one isoline level is required.' };
+            }
+
+            // Basic validation
+            if (mh <= 0) {
+                return { params: null, error: 'Mounting height must be positive.' };
+            }
+
+            const params: ComputeRequest = {
+                units,
+                mountingHeight: mh,
+                calcPlaneHeight: calcPlane,
+                radiusFactor,
+                detailLevel,
+                llf,
+                isoLevels,
+                illuminanceUnits,
+            };
+            return { params, error: null };
+        }
+    }));
 
     const handleFilesSelected = (files: File[]) => {
         if (files.length === 0) return;
         setFile(files[0]);
-        setError(null);
+        onError(null);
     };
 
     const addIsoLevel = () => {
@@ -57,62 +89,34 @@ const InputPanel: React.FC<InputPanelProps> = ({
         setIsoLevels(newLevels);
     };
 
-    const handleGenerate = () => {
-        if (!file) {
-            setError('Please upload an IES file.');
-            return;
-        }
-        if (isoLevels.length === 0) {
-            setError('At least one isoline level is required.');
-            return;
-        }
-
-        // Basic validation
-        if (mh <= 0) {
-            setError('Mounting height must be positive.');
-            return;
-        }
-
-        const params: ComputeRequest = {
-            units,
-            mountingHeight: mh,
-            calcPlaneHeight: calcPlane,
-            radiusFactor,
-            detailLevel,
-            llf,
-            isoLevels,
-            illuminanceUnits,
-        };
-
-        onGenerate(file, params);
-    };
-
     return (
-        <div className="flex flex-col gap-4 p-4 bg-app-surface rounded-lg shadow-sm border border-app-border h-full overflow-y-auto">
-            <h2 className="text-lg font-semibold text-app-text">Input Parameters</h2>
+        <div className="h-full overflow-y-auto pr-2 flex flex-col gap-4">
 
-            {/* Photometric File */}
-            <div className="w-full">
-                <DropZone
-                    onFilesSelected={handleFilesSelected}
-                    acceptedTypes={['.ies']}
-                    maxFiles={1}
-                    title="Upload IES File"
-                    description="Drag & drop or click to browse"
-                    isProcessing={isGenerating}
-                    compact={true}
-                />
-                {file && (
-                    <div className="mt-2 p-2 text-xs bg-app-surface-hover rounded text-app-text-muted border border-app-border">
-                        Selected: <span className="font-semibold text-app-text">{file.name}</span>
-                    </div>
-                )}
+            {/* Card 1: Upload IES File */}
+            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
+                <h3 className="text-sm font-medium text-app-text mb-3">1. Upload IES File</h3>
+                <div className="w-full">
+                    <DropZone
+                        onFilesSelected={handleFilesSelected}
+                        acceptedTypes={['.ies']}
+                        maxFiles={1}
+                        title="Upload IES File"
+                        description="Drag & drop or click to browse"
+                        isProcessing={isGenerating}
+                        compact={true}
+                    />
+                    {file && (
+                        <div className="mt-2 p-2 text-xs bg-app-surface-hover rounded text-app-text-muted border border-app-border">
+                            Selected: <span className="font-semibold text-app-text">{file.name}</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Mounting & Calc Plane */}
-            <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-app-text">Mounting & Geometry</h3>
-                <div className="grid grid-cols-2 gap-2">
+            {/* Card 2: Mounting & Geometry Info */}
+            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
+                <h3 className="text-sm font-medium text-app-text mb-3">2. Mounting & Geometry</h3>
+                <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-xs text-app-text-muted mb-1">Units</label>
                         <select
@@ -156,158 +160,145 @@ const InputPanel: React.FC<InputPanelProps> = ({
                 </div>
             </div>
 
-            {/* Grid Settings */}
-            <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-app-text">Available Drawing Space</h3>
-                <div>
-                    <label className="block text-xs text-app-text-muted mb-1">(Enter Drawing Space Radius) x MH</label>
-                    <input
-                        type="number"
-                        value={radiusFactor}
-                        onChange={(e) => setRadiusFactor(parseFloat(e.target.value))}
-                        className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs text-app-text-muted mb-1">Detail Level</label>
-                    <div className="flex gap-2">
-                        {['low', 'medium', 'high'].map((level) => (
-                            <label key={level} className="flex items-center gap-1 text-xs cursor-pointer text-app-text">
-                                <input
-                                    type="radio"
-                                    name="detailLevel"
-                                    value={level}
-                                    checked={detailLevel === level}
-                                    onChange={(e) => setDetailLevel(e.target.value as any)}
-                                    className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
-                                />
-                                {level.charAt(0).toUpperCase() + level.slice(1)}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Scale Bar & Grid Overlay */}
-            <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-app-text">Scale Bar & Grid</h3>
-                <div className="grid grid-cols-2 gap-2">
+            {/* Card 3: Available Drawing Space, detail level, scale bar & grid */}
+            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
+                <h3 className="text-sm font-medium text-app-text mb-3">3. Display Settings</h3>
+                <div className="flex flex-col gap-3">
                     <div>
-                        <label className="block text-xs text-app-text-muted mb-1">Length ({currentUnits})</label>
+                        <label className="block text-xs text-app-text-muted mb-1">Drawing Radius (x MH)</label>
                         <input
                             type="number"
-                            value={scaleBarLength}
-                            onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
+                            value={radiusFactor}
+                            onChange={(e) => setRadiusFactor(parseFloat(e.target.value))}
                             className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-app-text-muted mb-1">Grid Spacing</label>
-                        <select
-                            value={gridSize || ''}
-                            onChange={(e) => setGridSize(e.target.value ? parseFloat(e.target.value) : null)}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
-                        >
-                            <option value="">None</option>
-                            <option value="1">1x1 {currentUnits}</option>
-                            <option value="5">5x5 {currentUnits}</option>
-                            <option value="10">10x10 {currentUnits}</option>
-                        </select>
+                        <label className="block text-xs text-app-text-muted mb-1">Detail Level</label>
+                        <div className="flex gap-2">
+                            {['low', 'medium', 'high'].map((level) => (
+                                <label key={level} className="flex items-center gap-1 text-xs cursor-pointer text-app-text">
+                                    <input
+                                        type="radio"
+                                        name="detailLevel"
+                                        value={level}
+                                        checked={detailLevel === level}
+                                        onChange={(e) => setDetailLevel(e.target.value as any)}
+                                        className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
+                                    />
+                                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                        <div>
+                            <label className="block text-xs text-app-text-muted mb-1">Scale Bar</label>
+                            <input
+                                type="number"
+                                value={scaleBarLength}
+                                onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
+                                className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-app-text-muted mb-1">Grid Spacing</label>
+                            <select
+                                value={gridSize || ''}
+                                onChange={(e) => setGridSize(e.target.value ? parseFloat(e.target.value) : null)}
+                                className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            >
+                                <option value="">None</option>
+                                <option value="1">1x1 {currentUnits}</option>
+                                <option value="5">5x5 {currentUnits}</option>
+                                <option value="10">10x10 {currentUnits}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Photometric Output */}
-            <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-medium text-app-text">Output Units</h3>
-                <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-app-text">
-                        <input
-                            type="radio"
-                            name="illUnits"
-                            value="fc"
-                            checked={illuminanceUnits === 'fc'}
-                            onChange={() => setIlluminanceUnits('fc')}
-                            className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
-                        />
-                        Footcandles (fc)
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-app-text">
-                        <input
-                            type="radio"
-                            name="illUnits"
-                            value="lux"
-                            checked={illuminanceUnits === 'lux'}
-                            onChange={() => setIlluminanceUnits('lux')}
-                            className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
-                        />
-                        Lux
-                    </label>
-                </div>
-            </div>
+            {/* Card 4: Output Units & Isoline Parameters */}
+            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
+                <h3 className="text-sm font-medium text-app-text mb-3">4. Output & Isolines</h3>
+                <div className="flex flex-col gap-4">
+                    <div>
+                        <label className="block text-xs text-app-text-muted mb-2">Output Units</label>
+                        <div className="flex gap-4">
+                            <label className="flex items-center gap-2 text-sm text-app-text">
+                                <input
+                                    type="radio"
+                                    name="illUnits"
+                                    value="fc"
+                                    checked={illuminanceUnits === 'fc'}
+                                    onChange={() => setIlluminanceUnits('fc')}
+                                    className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
+                                />
+                                Footcandles (fc)
+                            </label>
+                            <label className="flex items-center gap-2 text-sm text-app-text">
+                                <input
+                                    type="radio"
+                                    name="illUnits"
+                                    value="lux"
+                                    checked={illuminanceUnits === 'lux'}
+                                    onChange={() => setIlluminanceUnits('lux')}
+                                    className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
+                                />
+                                Lux
+                            </label>
+                        </div>
+                    </div>
 
-            {/* Isoline Configuration */}
-            <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-app-text">Isolines (Max 5)</h3>
-                    <button
-                        onClick={addIsoLevel}
-                        disabled={isoLevels.length >= 5}
-                        className="text-xs text-app-primary hover:text-app-primary-hover disabled:text-app-text-muted"
-                    >
-                        + Add
-                    </button>
-                </div>
-                <div className="flex flex-col gap-2">
-                    {isoLevels.map((level, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                            <input
-                                type="number"
-                                step="0.1"
-                                value={level.value}
-                                onChange={(e) => updateIsoLevel(idx, 'value', parseFloat(e.target.value))}
-                                className="w-20 bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm p-1 focus:ring-app-primary focus:border-app-primary"
-                                placeholder="Value"
-                            />
-                            <input
-                                type="color"
-                                value={level.color}
-                                onChange={(e) => updateIsoLevel(idx, 'color', e.target.value)}
-                                className="w-8 h-8 p-0 border-0 rounded cursor-pointer bg-transparent"
-                            />
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-xs text-app-text-muted">Isoline Levels (Max 5)</label>
                             <button
-                                onClick={() => removeIsoLevel(idx)}
-                                className="text-app-text-muted hover:text-app-accent"
+                                onClick={addIsoLevel}
+                                disabled={isoLevels.length >= 5}
+                                className="text-xs text-app-primary hover:text-app-primary-hover disabled:text-app-text-muted"
                             >
-                                &times;
+                                + Add
                             </button>
                         </div>
-                    ))}
+                        <div className="flex flex-col gap-2">
+                            {isoLevels.map((level, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        value={level.value}
+                                        onChange={(e) => updateIsoLevel(idx, 'value', parseFloat(e.target.value))}
+                                        className="w-20 bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm p-1 focus:ring-app-primary focus:border-app-primary"
+                                        placeholder="Value"
+                                    />
+                                    <input
+                                        type="color"
+                                        value={level.color}
+                                        onChange={(e) => updateIsoLevel(idx, 'color', e.target.value)}
+                                        className="w-8 h-8 p-0 border-0 rounded cursor-pointer bg-transparent"
+                                    />
+                                    <button
+                                        onClick={() => removeIsoLevel(idx)}
+                                        className="text-app-text-muted hover:text-app-accent"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="p-3 text-sm text-app-error bg-app-error/10 rounded-md border border-app-error/20">
-                    {error}
+            <div className="pt-4">
+                <div className="text-xs text-app-text-muted border-t border-app-border pt-4">
+                    <strong className="block mb-1 font-semibold text-app-text">Disclaimer:</strong>
+                    This tool is intended for preliminary layout and visual reference only. It should not be used as a substitute for professional lighting design software or calculations. Always verify results with industry-standard tools (e.g., AGi32) for final documentation, code compliance, and construction purposes.
                 </div>
-            )}
-
-            {/* Action Button */}
-            <button
-                onClick={handleGenerate}
-                disabled={isGenerating || !file}
-                className="w-full py-2 bg-app-surface hover:bg-app-surface-hover text-app-primary border border-app-border rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-                {isGenerating ? 'Generating...' : 'Generate Isolines'}
-            </button>
-
-            {/* Disclaimer */}
-            <div className="text-xs text-app-text-muted italic mt-2">
-                For preliminary layout and visual reference only; use full AGi32/Lighting design calculations for final documentation and compliance.
             </div>
         </div>
     );
-};
+});
 
 export default InputPanel;
