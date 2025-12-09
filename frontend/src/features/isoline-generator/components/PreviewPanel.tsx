@@ -71,7 +71,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         return (
             <div className="flex items-center justify-center h-full bg-app-surface border border-app-border rounded-lg">
                 <div className="text-app-text-muted text-center p-4">
-                    Upload an IES file and click Generate to see the preview.
+                    Upload an IES file, adjust parameters, and click Preview Isolines.
                 </div>
             </div>
         );

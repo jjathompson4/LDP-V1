@@ -1,4 +1,5 @@
 import React from 'react';
+import { RotateCw } from 'lucide-react';
 import type { ComputeResponse, ExportOptions } from '../../../services/isolineService';
 
 interface ExportPanelProps {
@@ -6,6 +7,8 @@ interface ExportPanelProps {
     onGenerate: () => void;
     isFileSelected: boolean;
     isGenerating: boolean;
+    onRotate: (axis: 'x' | 'y' | 'z') => void;
+    rotation: { x: number; y: number; z: number };
     onExportPdf: (options: ExportOptions) => void;
     onExportPng: (options: ExportOptions) => void;
     isExporting: boolean;
@@ -25,6 +28,8 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
     onGenerate,
     isFileSelected,
     isGenerating,
+    onRotate,
+    rotation,
     onExportPdf,
     onExportPng,
     isExporting,
@@ -66,7 +71,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         <div className="bg-app-surface p-4 rounded-lg shadow-sm border border-app-border flex flex-col gap-4">
             <h3 className="text-md font-semibold text-app-text border-b border-app-border pb-2">Export Isolines</h3>
 
-            {/* Generate Button (Moved here) */}
+            {/* Generate Button */}
             <button
                 onClick={onGenerate}
                 disabled={isGenerating || !isFileSelected}
@@ -74,6 +79,37 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
             >
                 {isGenerating ? 'Previewing...' : 'Preview Isolines'}
             </button>
+
+            {/* Rotation Controls */}
+            <div className="flex gap-2">
+                <button
+                    onClick={() => onRotate('x')}
+                    disabled={isGenerating || !isFileSelected}
+                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    title="Rotate Tilt (X-Axis)"
+                >
+                    <RotateCw className="w-3 h-3" />
+                    X {rotation.x > 0 && <span>{rotation.x}°</span>}
+                </button>
+                <button
+                    onClick={() => onRotate('y')}
+                    disabled={isGenerating || !isFileSelected}
+                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    title="Rotate Roll (Y-Axis)"
+                >
+                    <RotateCw className="w-3 h-3" />
+                    Y {rotation.y > 0 && <span>{rotation.y}°</span>}
+                </button>
+                <button
+                    onClick={() => onRotate('z')}
+                    disabled={isGenerating || !isFileSelected}
+                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    title="Rotate Orientation (Z-Axis)"
+                >
+                    <RotateCw className="w-3 h-3" />
+                    Z {rotation.z > 0 && <span>{rotation.z}°</span>}
+                </button>
+            </div>
 
             {/* Export Buttons */}
             <div className="flex gap-2">

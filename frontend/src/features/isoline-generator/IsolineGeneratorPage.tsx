@@ -18,6 +18,7 @@ const IsolineGeneratorPage: React.FC = () => {
     const [scaleBarLength, setScaleBarLength] = useState<number>(50);
     const [gridSize, setGridSize] = useState<number | null>(null);
     const [fileName, setFileName] = useState<string>('isolines');
+    const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 
     // Export Options State
     const [includeScaleBar, setIncludeScaleBar] = useState(true);
@@ -39,8 +40,30 @@ const IsolineGeneratorPage: React.FC = () => {
         }
 
         if (params) {
+            // Apply current rotation
+            params.rotationX = rotation.x;
+            params.rotationY = rotation.y;
+            params.rotationZ = rotation.z;
             handleGenerate(file, params);
         }
+    };
+
+    const handleRotate = (axis: 'x' | 'y' | 'z') => {
+        setRotation(prev => {
+            const next = { ...prev, [axis]: (prev[axis] + 90) % 360 };
+
+            // If we have data, regenerate immediately with new rotation
+            if (file && inputPanelRef.current) {
+                const { params } = inputPanelRef.current.getParams();
+                if (params) {
+                    params.rotationX = next.x;
+                    params.rotationY = next.y;
+                    params.rotationZ = next.z;
+                    handleGenerate(file, params);
+                }
+            }
+            return next;
+        });
     };
 
     const handleGenerate = async (uploadedFile: File, params: ComputeRequest) => {
@@ -172,6 +195,8 @@ const IsolineGeneratorPage: React.FC = () => {
                             onGenerate={triggerGenerate}
                             isFileSelected={!!file}
                             isGenerating={isGenerating}
+                            onRotate={handleRotate}
+                            rotation={rotation}
                             onExportPdf={handleExportPdf}
                             onExportPng={handleExportPng}
                             isExporting={isExporting}

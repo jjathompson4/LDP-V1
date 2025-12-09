@@ -63,6 +63,9 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                 llf,
                 isoLevels,
                 illuminanceUnits,
+                rotationX: 0,
+                rotationY: 0,
+                rotationZ: 0,
             };
             return { params, error: null };
         }

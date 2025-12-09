@@ -14,6 +14,9 @@ export interface ComputeRequest {
     llf: number;
     isoLevels: IsolineLevel[];
     illuminanceUnits: 'fc' | 'lux';
+    rotationX: number;
+    rotationY: number;
+    rotationZ: number;
 }
 
 export interface IsolinePath {

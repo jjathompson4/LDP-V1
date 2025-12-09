@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Body
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import matplotlib
@@ -32,9 +32,9 @@ class ComputeRequest(BaseModel):
     llf: float = 1.0
     isoLevels: List[IsolineLevel]
     illuminanceUnits: str = "fc"
-
-class IsolinePath(BaseModel):
-    path: List[List[float]] # [[x1, y1], [x2, y2], ...]
+    rotationX: float = 0.0
+    rotationY: float = 0.0
+    rotationZ: float = 0.0
 
 class IsolineLabel(BaseModel):
     x: float
@@ -44,7 +44,7 @@ class IsolineLabel(BaseModel):
 class IsolineLevelResult(BaseModel):
     value: float
     color: str
-    paths: List[List[List[float]]] # List of paths, each path is list of points
+    paths: List[List[List[float]]] 
     labels: List[IsolineLabel]
 
 class ComputeResponse(BaseModel):
@@ -54,9 +54,8 @@ class ComputeResponse(BaseModel):
     calcPlaneHeight: float
     radius: float
     extents: Dict[str, float]
-    scaleBar: Dict[str, object]
+    scaleBar: Dict[str, Any]
     levels: List[IsolineLevelResult]
-
 
 class ExportOptions(BaseModel):
     format: str = "pdf"
@@ -64,8 +63,8 @@ class ExportOptions(BaseModel):
     includeLabels: bool = True
     includeDisclaimer: bool = True
     includeGrid: bool = False
-    scaleBarLength: float = 50.0
     gridSpacing: Optional[float] = None
+    scaleBarLength: float = 50.0
     fileName: Optional[str] = None
 
 class ExportPdfRequest(BaseModel):
@@ -75,158 +74,117 @@ class ExportPdfRequest(BaseModel):
 class ExportPngRequest(BaseModel):
     isolineData: ComputeResponse
     options: ExportOptions
-    widthPx: int = 2000
-
-# --- Helper Functions ---
 
 def parse_ies(content: str):
-    """
-    Basic IES parser for Type C photometry.
-    Returns a dictionary with candela matrix and angles.
-    """
-    lines = content.strip().splitlines()
-    # Skip header lines until TILT=...
+    lines = content.split('\n')
+    lines = [l.strip() for l in lines if l.strip()]
     
-    # This is a very simplified parser. Real IES files are messy.
-    # We will look for TILT=...
-    
-    tilt_line_idx = -1
+    # Find TILT
+    start_idx = 0
     for i, line in enumerate(lines):
-        if line.strip().upper().startswith("TILT="):
-            tilt_line_idx = i
+        if line.startswith("TILT="):
+            start_idx = i
             break
             
-    if tilt_line_idx == -1:
-        raise ValueError("Invalid IES file: TILT line not found.")
+    if start_idx == 0 and not lines[0].startswith("IESNA"):
+        # Fallback if IESNA header is missing but TILT is there
+        pass
         
-    tilt_val = lines[tilt_line_idx].split("=")[1].strip()
-    if tilt_val.upper() != "NONE":
-        raise ValueError(f"Unsupported TILT={tilt_val}. Only TILT=NONE is supported.")
-        
-    # After TILT=NONE, next lines are usually:
-    # <# lamps> <lumens/lamp> <multiplier> <# vert angles> <# horiz angles> <photo type> <units type> <width> <length> <height>
-    # <ballast factor> <ballast lamp factor> <input watts>
+    # After TILT line, read data
+    # 1. Lamp info
+    # 2. Ballast factor, etc.
+    # 3. Angle counts
     
-    # We need to find the line with the data. It's often a few lines down.
-    # We can try to skip lines that look like keywords or empty.
+    # This is a simplified parser
+    # We need to robustly consume numbers across newlines
     
-    # Let's collect all numbers after TILT line
-    data_numbers = []
-    for line in lines[tilt_line_idx+1:]:
-        # Remove comments if any? IES doesn't really have standard comments in data block
+    data_lines = lines[start_idx+1:]
+    all_values = []
+    for line in data_lines:
         parts = line.split()
         for p in parts:
             try:
-                val = float(p)
-                data_numbers.append(val)
-            except ValueError:
+                all_values.append(float(p))
+            except:
                 pass
                 
-    if len(data_numbers) < 13:
-        raise ValueError("IES file seems truncated or invalid.")
-        
-    num_lamps = int(data_numbers[0])
-    lumens_per_lamp = data_numbers[1]
-    multiplier = data_numbers[2]
-    num_vert_angles = int(data_numbers[3])
-    num_horiz_angles = int(data_numbers[4])
-    photo_type = int(data_numbers[5])
-    units_type = int(data_numbers[6])
-    # ... dimensions ...
+    # Now map values
+    # pointer
+    p = 0
     
-    if photo_type != 1: # 1 = Type C
-        raise ValueError(f"Unsupported Photometric Type {photo_type}. Only Type C (1) is supported.")
-        
-    # Data starts after the 13 header numbers + vert angles + horiz angles
-    # The structure is:
-    # [Vert Angles]
-    # [Horiz Angles]
-    # [Candela Values]
+    # Line 1: #Lamps, Lumens/Lamp, Multiplier, VerticalAngles, HorizontalAngles, PhotometricType, UnitType, Width, Length, Height
+    num_lamps = int(all_values[p]); p+=1
+    lumens_per_lamp = all_values[p]; p+=1
+    multiplier = all_values[p]; p+=1
+    num_v_angles = int(all_values[p]); p+=1
+    num_h_angles = int(all_values[p]); p+=1
+    photometric_type = int(all_values[p]); p+=1
+    unit_type = int(all_values[p]); p+=1
+    width = all_values[p]; p+=1
+    length = all_values[p]; p+=1
+    height = all_values[p]; p+=1
     
-    # Index of start of angles
-    idx = 13
+    # Ballast factor, etc. (3 values)
+    p += 3
     
-    vert_angles = data_numbers[idx : idx + num_vert_angles]
-    idx += num_vert_angles
+    # Vertical Angles
+    vert_angles = np.array(all_values[p : p+num_v_angles])
+    p += num_v_angles
     
-    horiz_angles = data_numbers[idx : idx + num_horiz_angles]
-    idx += num_horiz_angles
+    # Horizontal Angles
+    horiz_angles = np.array(all_values[p : p+num_h_angles])
+    p += num_h_angles
     
-    candela_values = data_numbers[idx:]
+    # Candela Values
+    # Order: For each Horizontal Angle, list all Vertical Angles
+    candela_list = all_values[p:]
     
-    # Candela values are usually listed as:
-    # For 1st horiz angle, all vert angles
-    # For 2nd horiz angle, all vert angles
-    # ...
+    # Expected size
+    expected = num_v_angles * num_h_angles
+    candela_list = candela_list[:expected]
     
-    expected_candela_count = num_vert_angles * num_horiz_angles
-    if len(candela_values) < expected_candela_count:
-        # Sometimes there are extra numbers or we missed something. 
-        # But if we have enough, we proceed.
-        raise ValueError(f"Insufficient candela values. Expected {expected_candela_count}, found {len(candela_values)}")
-        
-    candela_matrix = np.array(candela_values[:expected_candela_count]).reshape((num_horiz_angles, num_vert_angles))
+    # Reshape
+    # IES format: For first horizontal angle, read all vertical angles. Then second H, etc.
+    # So we have (num_h, num_v)
+    candela_matrix = np.array(candela_list).reshape((num_h_angles, num_v_angles))
     
     # Apply multiplier
     candela_matrix *= multiplier
     
     return {
-        "vert_angles": np.array(vert_angles),
-        "horiz_angles": np.array(horiz_angles),
-        "candela_matrix": candela_matrix,
-        "total_lumens": float(lumens_per_lamp) * num_lamps if float(lumens_per_lamp) > 0 else 0 # Approximate
+        "vert_angles": vert_angles,
+        "horiz_angles": horiz_angles,
+        "candela_matrix": candela_matrix
     }
 
-def get_candela(ies_data, v_angle, h_angle):
-    """
-    Interpolate candela value for given vertical and horizontal angles.
-    """
-    # Create interpolator
-    # RegularGridInterpolator expects (x, y) points.
-    # Our data is (horiz, vert)
-    
-    # Handle symmetry if needed?
-    # Type C usually 0-90, 0-180, 0-360.
-    # We assume the IES file covers the needed range or we might need to mirror.
-    # For simplicity, we assume the IES covers what we need or we clamp/wrap.
-    # But strictly, we should handle symmetry.
-    
-    # Let's assume standard 0-360 or symmetric.
-    # If 0-90 or 0-180, we need to map input h_angle to that range.
-    
-    h_angles = ies_data["horiz_angles"]
-    v_angles = ies_data["vert_angles"]
-    matrix = ies_data["candela_matrix"]
-    
-    # Wrap h_angle to 0-360
-    h_angle = h_angle % 360.0
-    
-    # Simple symmetry handling
-    max_h = h_angles[-1]
-    if max_h == 90:
-        # Quadrilateral symmetry
-        if h_angle > 90 and h_angle <= 180:
-            h_angle = 180 - h_angle
-        elif h_angle > 180 and h_angle <= 270:
-            h_angle = h_angle - 180
-        elif h_angle > 270:
-            h_angle = 360 - h_angle
-    elif max_h == 180:
-        # Bilateral symmetry
-        if h_angle > 180:
-            h_angle = 360 - h_angle
-            
-    # Clamp v_angle
-    v_angle = np.clip(v_angle, v_angles[0], v_angles[-1])
-    
-    # We can use scipy RegularGridInterpolator
-    # But we need to recreate it every time? No, create once.
-    # For vectorization, we can pass arrays.
-    
-    interp = RegularGridInterpolator((h_angles, v_angles), matrix, bounds_error=False, fill_value=None)
-    return interp((h_angle, v_angle))
+def rotation_matrix_x(angle_deg):
+    rad = np.radians(angle_deg)
+    c, s = np.cos(rad), np.sin(rad)
+    return np.array([
+        [1, 0, 0],
+        [0, c, -s],
+        [0, s, c]
+    ])
 
-def compute_grid(ies_data, mh, calc_plane, radius, detail_level, llf):
+def rotation_matrix_y(angle_deg):
+    rad = np.radians(angle_deg)
+    c, s = np.cos(rad), np.sin(rad)
+    return np.array([
+        [c, 0, s],
+        [0, 1, 0],
+        [-s, 0, c]
+    ])
+
+def rotation_matrix_z(angle_deg):
+    rad = np.radians(angle_deg)
+    c, s = np.cos(rad), np.sin(rad)
+    return np.array([
+        [c, -s, 0],
+        [s, c, 0],
+        [0, 0, 1]
+    ])
+
+def compute_grid(ies_data, mh, calc_plane, radius, detail_level, llf, rot_x=0.0, rot_y=0.0, rot_z=0.0):
     # Determine grid spacing
     if detail_level == "low":
         spacing = 2.0
@@ -244,29 +202,109 @@ def compute_grid(ies_data, mh, calc_plane, radius, detail_level, llf):
     
     xx, yy = np.meshgrid(x, y)
     
-    # Calculate geometry
-    # Luminaire at (0, 0, mh)
-    # Point at (x, y, calc_plane)
+    # Calculate vector from luminaire (0,0,mh) to grid points (xx, yy, calc_plane)
+    # v = P_grid - P_lum
+    # P_grid = (xx, yy, calc_plane)
+    # P_lum = (0, 0, mh)
+    # v = (xx, yy, calc_plane - mh)
+    # v = (xx, yy, -dz)
+    
     dz = mh - calc_plane
     if dz <= 0:
         return xx, yy, np.zeros_like(xx)
         
-    d2 = xx**2 + yy**2 + dz**2
+    # Vectors in global frame
+    # We flatten for matrix multiplication
+    num_pts = xx.size
+    vx = xx.flatten()
+    vy = yy.flatten()
+    vz = np.full(num_pts, -dz)
+    
+    # Stack array for rotation (3, N)
+    v_global = np.vstack((vx, vy, vz))
+    
+    # Calculate Rotation Matrix R = Rz * Ry * Rx
+    # We want to transform Global to Local, so we apply inverse rotation.
+    # v_local = R_inv * v_global
+    # R_inv = (Rz * Ry * Rx)^-1 = Rx^-1 * Ry^-1 * Rz^-1
+    # Note: Rotation by -angle gives inverse.
+    
+    rx_inv = rotation_matrix_x(-rot_x)
+    ry_inv = rotation_matrix_y(-rot_y)
+    rz_inv = rotation_matrix_z(-rot_z)
+    
+    # Combined inverse rotation matrix
+    # Order matters: first undo Z, then Y, then X for "intrinsic" rotations? 
+    # Or if we assume rot = rot_z(rot_y(rot_x(v))), then inverse is inv_x(inv_y(inv_z(v)))
+    # Let's assume standard Euler (Z-Y-X or similar). 
+    # Let's apply in reverse order of application.
+    # Typically: Rotate X (Tilt), then Y (Roll), then Z (Orientation).
+    # So v_global = Rz * Ry * Rx * v_local
+    # v_local = Rx' * Ry' * Rz' * v_global
+    
+    r_comb_inv = rx_inv @ (ry_inv @ rz_inv)
+    
+    # Apply rotation
+    v_local = r_comb_inv @ v_global
+    
+    # Extract local components
+    lx = v_local[0, :]
+    ly = v_local[1, :]
+    lz = v_local[2, :]
+    
+    # Calculate spherical coordinates in local frame
+    d2 = lx**2 + ly**2 + lz**2
     d = np.sqrt(d2)
     
-    # Vertical angle: acos(dz / d) * 180 / pi
-    # But wait, Type C vertical angle is 0 at nadir (down).
-    # So angle is angle from nadir.
-    # cos(theta) = dz / d
-    # theta = acos(dz/d)
-    v_angles = np.degrees(np.arccos(dz / d))
+    # Avoid div by zero
+    d[d == 0] = 1e-9
+    
+    # Vertical angle (from nadir)
+    # in local frame, nadir is -Z axis (0, 0, -1)
+    # theta = arccos( dot(v, nadir) / |v| )
+    # v . nadir = -lz
+    # But Type C vertical angles:
+    # 0 is down (-Z in standard, or is it?)
+    # Usually in IES, 0 is nadir, 90 is horizontal, 180 is zenith.
+    # So we want angle between vector and (0,0,-1).
+    # cos(theta) = -lz / d
+    # Wait, if lz is negative (down), -lz is positive. cos(0)=1. Correct.
+    
+    # Clip for arccos stability
+    cos_theta = np.clip(-lz / d, -1.0, 1.0)
+    v_angles = np.degrees(np.arccos(cos_theta))
     
     # Horizontal angle
+    # In Type C, 0 degrees horizontal plane.
+    # Usually defines plane containing the beam?
+    # Standard: 0 is +X axis ?
     # atan2(y, x)
-    # Type C: 0 degrees is usually along X axis? Or Y?
-    # Usually 0 is along the photometric axis. Let's assume +X is 0.
-    h_angles = np.degrees(np.arctan2(yy, xx))
+    h_angles = np.degrees(np.arctan2(ly, lx))
     h_angles = (h_angles + 360) % 360
+    
+    # Original distance (from source to point) is 'd' (magnitude remains same after rotation)
+    # Used for inverse square law: E = I * cos(incidence) / d^2
+    # Incidence angle is angle between light ray and normal to surface.
+    # Surface normal is (0,0,1) in global frame.
+    # Light ray vector is v_global = (vx, vy, vz). vz is -dz.
+    # cos(incidence) = dot(-v_global, normal) / d
+    # -v_global = (-vx, -vy, dz)
+    # normal = (0, 0, 1)
+    # dot = dz
+    # So cos(incidence) = dz / d
+    # This remains dz / d regardless of luminaire rotation!
+    # Because surface didn't rotate.
+    
+    # BUT 'd' is calculated from grid point to luminaire, which is same.
+    # So we use Global d and Global dz for illuminance calculation.
+    # We use Local angles for Intensity lookup.
+    
+    # For d calculation, I can use the d derived from local vector (magnitude invariant).
+    # For dz, I use the original dz (mh - calc_plane).
+    
+    # Reshape for interpolation
+    # ...
+
     
     # Interpolate candela
     # We need to flatten to pass to interpolator
@@ -302,6 +340,8 @@ def compute_grid(ies_data, mh, calc_plane, radius, detail_level, llf):
     pts = np.column_stack((h_input, v_flat))
     cd_values = interp(pts)
     cd_values = cd_values.reshape(xx.shape)
+    
+    d = d.reshape(xx.shape)
     
     # Calculate illuminance
     # E = (I * cos(theta)) / d^2
@@ -364,7 +404,10 @@ async def compute_isolines(
             req.calcPlaneHeight, 
             radius, 
             req.detailLevel, 
-            req.llf
+            req.llf,
+            req.rotationX,
+            req.rotationY,
+            req.rotationZ
         )
         
         # Sanitize NaNs
