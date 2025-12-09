@@ -312,30 +312,54 @@ def compute_grid(ies_data, mh, calc_plane, radius, detail_level, llf, rot_x=0.0,
     v_flat = v_angles.flatten()
     
     # Setup interpolator
+    
+    # Handle Type V / Rotational Symmetry (single horizontal angle)
+    # If there is only 1 horizontal angle, we assume it applies to all H.
+    # We expand the grid to [0, 360] to satisfy interpolation and provide constant H lookup.
+    
+    interp_h_angles = ies_data["horiz_angles"]
+    interp_cd_matrix = ies_data["candela_matrix"]
+    
+    if len(interp_h_angles) == 1:
+        # Replicate to 0 and 360
+        val = interp_h_angles[0]
+        interp_h_angles = np.array([0.0, 360.0])
+        # Stack the single column twice: (1, V) -> (2, V)
+        # Note: candela_matrix is (H, V)
+        # We need to stack rows.
+        interp_cd_matrix = np.vstack((interp_cd_matrix, interp_cd_matrix))
+        
     interp = RegularGridInterpolator(
-        (ies_data["horiz_angles"], ies_data["vert_angles"]), 
-        ies_data["candela_matrix"], 
+        (interp_h_angles, ies_data["vert_angles"]), 
+        interp_cd_matrix, 
         bounds_error=False, 
-        fill_value=0 # If out of bounds (shouldn't be for v), assume 0
+        fill_value=0 # If out of bounds of V (e.g. >90 for direct), assume 0
     )
     
     # Handle symmetry for interpolation inputs
     # (This logic duplicates get_candela but vectorized)
-    max_h = ies_data["horiz_angles"][-1]
+    max_h = interp_h_angles[-1]
     
     h_input = h_flat.copy()
-    if max_h == 90:
-        # Quadrilateral
-        mask1 = (h_input > 90) & (h_input <= 180)
-        h_input[mask1] = 180 - h_input[mask1]
-        mask2 = (h_input > 180) & (h_input <= 270)
-        h_input[mask2] = h_input[mask2] - 180
-        mask3 = (h_input > 270)
-        h_input[mask3] = 360 - h_input[mask3]
-    elif max_h == 180:
-        # Bilateral
-        mask = h_input > 180
-        h_input[mask] = 360 - h_input[mask]
+    
+    # If we manually expanded to 360, max_h is 360. We don't need further symmetry mapping 
+    # because the grid covers the full range (constant).
+    # But checking if original data implied symmetry
+    original_max_h = ies_data["horiz_angles"][-1]
+    
+    if len(ies_data["horiz_angles"]) > 1:
+        if np.isclose(original_max_h, 90):
+            # Quadrilateral
+            mask1 = (h_input > 90) & (h_input <= 180)
+            h_input[mask1] = 180 - h_input[mask1]
+            mask2 = (h_input > 180) & (h_input <= 270)
+            h_input[mask2] = h_input[mask2] - 180
+            mask3 = (h_input > 270)
+            h_input[mask3] = 360 - h_input[mask3]
+        elif np.isclose(original_max_h, 180):
+            # Bilateral
+            mask = h_input > 180
+            h_input[mask] = 360 - h_input[mask]
         
     pts = np.column_stack((h_input, v_flat))
     cd_values = interp(pts)
