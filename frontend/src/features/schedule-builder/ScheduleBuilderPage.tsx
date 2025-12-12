@@ -6,8 +6,8 @@ import { exportToXLSX } from './utils/export';
 import type { ColumnConfig } from './types';
 import { ArrowDownAZ, Table2 } from 'lucide-react';
 import { DEFAULT_COLUMNS } from './utils/columns';
-import { ApiKeyModal } from './components/ApiKeyModal';
-import { getApiKey, setApiKey } from './utils/apiKey';
+import { GeminiKeyModal } from '../../shared/ai/GeminiKeyModal';
+import { useAiConfig } from '../../shared/ai/aiConfigContext';
 
 // Hooks
 import { useScheduleData } from './hooks/useScheduleData';
@@ -20,9 +20,11 @@ import { ColumnSettingsModal } from './components/ColumnSettingsModal';
 const ScheduleBuilderPage: React.FC = () => {
     // UI Visibility State
     const [isUploadVisible, setIsUploadVisible] = useState(true);
-    // const [isScheduleVisible, setIsScheduleVisible] = useState(true);
     const [isLogVisible, setIsLogVisible] = useState<boolean>(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+
+    // Shared AI Config
+    const { geminiApiKey } = useAiConfig();
     const [isApiKeyModalVisible, setIsApiKeyModalVisible] = useState<boolean>(false);
 
     // Columns State
@@ -49,6 +51,7 @@ const ScheduleBuilderPage: React.FC = () => {
         handleReanalyze
     } = useScheduleData({
         columns,
+        apiKey: geminiApiKey,
         onApiKeyRequired: () => setIsApiKeyModalVisible(true),
         onScheduleVisibilityChange: () => { } // Visibility handled by layout now
     });
@@ -64,20 +67,14 @@ const ScheduleBuilderPage: React.FC = () => {
     } = useColumnSizing({ fixtures, columns });
 
     // Content Resizing Logic 
-    // const [contentWidth, setContentWidth] = useState<number | undefined>(undefined);
-    // const isResizingContent = useRef(false);
-    // const contentResizeStartX = useRef(0);
-    // const contentResizeStartWidth = useRef(0);
     const uploadModuleRef = useRef<HTMLDivElement>(null);
-    // const [uploadModuleHeight, setUploadModuleHeight] = useState<number>(0);
-    // const [uploadModuleTop, setUploadModuleTop] = useState<number>(0);
 
     // Initial Auth Check
     useEffect(() => {
-        if (!getApiKey()) {
+        if (!geminiApiKey) {
             setIsApiKeyModalVisible(true);
         }
-    }, []);
+    }, [geminiApiKey]);
 
     // Save columns
     useEffect(() => {
@@ -88,14 +85,9 @@ const ScheduleBuilderPage: React.FC = () => {
         }
     }, [columns]);
 
-    const handleSaveApiKey = (key: string) => {
-        setApiKey(key);
-        setIsApiKeyModalVisible(false);
-    };
-
     return (
         <div className="h-full flex flex-col bg-app-bg overflow-hidden">
-            <ApiKeyModal isVisible={isApiKeyModalVisible} onSave={handleSaveApiKey} />
+            <GeminiKeyModal isVisible={isApiKeyModalVisible} onClose={() => setIsApiKeyModalVisible(false)} />
             <ColumnSettingsModal
                 isOpen={isSettingsModalOpen}
                 onClose={() => setIsSettingsModalOpen(false)}

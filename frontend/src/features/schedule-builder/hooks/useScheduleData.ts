@@ -1,15 +1,15 @@
 import { useState, useCallback } from 'react';
 import type { Fixture, ProcessedFile, ColumnConfig, SelectedCell } from '../types';
 import { extractFixtureDataFromPdf } from '../services/geminiService';
-import { getApiKey } from '../utils/apiKey';
 
 interface UseScheduleDataProps {
     columns: ColumnConfig[];
+    apiKey: string | null;
     onApiKeyRequired: () => void;
     onScheduleVisibilityChange?: (visible: boolean) => void;
 }
 
-export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilityChange }: UseScheduleDataProps) => {
+export const useScheduleData = ({ columns, apiKey, onApiKeyRequired, onScheduleVisibilityChange }: UseScheduleDataProps) => {
     const [fixtures, setFixtures] = useState<Fixture[]>([]);
     const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -52,7 +52,7 @@ export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilit
     }, []);
 
     const handleFilesUpload = useCallback(async (files: File[]) => {
-        if (!getApiKey()) {
+        if (!apiKey) {
             onApiKeyRequired();
             return;
         }
@@ -73,7 +73,7 @@ export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilit
             setProcessedFiles(prev => prev.map(pf => (pf.name === file.name && pf.status === 'pending' ? { ...pf, status: 'processing' } : pf)));
 
             try {
-                const extractedData = await extractFixtureDataFromPdf(file, visibleColumns);
+                const extractedData = await extractFixtureDataFromPdf(file, visibleColumns, apiKey);
                 if (extractedData) {
                     const newFixture: Fixture = {
                         id: `${file.name}-${Date.now()}`,
@@ -119,10 +119,10 @@ export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilit
         }
 
         setIsProcessing(false);
-    }, [columns, onApiKeyRequired, onScheduleVisibilityChange]);
+    }, [columns, onApiKeyRequired, onScheduleVisibilityChange, apiKey]);
 
     const handleReanalyze = useCallback(async (fixtureId: string, file: File) => {
-        if (!getApiKey()) {
+        if (!apiKey) {
             onApiKeyRequired();
             return;
         }
@@ -130,7 +130,7 @@ export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilit
         setProcessedFiles(prev => prev.map(pf => pf.name === file.name ? { ...pf, status: 'processing' } : { ...pf, status: 'pending' }));
         try {
             const visibleColumns = columns.filter(c => c.visible);
-            const extractedData = await extractFixtureDataFromPdf(file, visibleColumns);
+            const extractedData = await extractFixtureDataFromPdf(file, visibleColumns, apiKey);
             if (extractedData) {
                 const updatedData = {
                     ...extractedData,
@@ -153,7 +153,7 @@ export const useScheduleData = ({ columns, onApiKeyRequired, onScheduleVisibilit
             setProcessedFiles(prev => prev.map(pf => pf.name === file.name ? { ...pf, status: 'error', error: (error as Error).message } : pf));
         }
         setIsProcessing(false);
-    }, [columns, onApiKeyRequired]);
+    }, [columns, onApiKeyRequired, apiKey]);
 
     return {
         fixtures,

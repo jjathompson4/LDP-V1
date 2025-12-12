@@ -12,22 +12,18 @@ from .processing import (
     pixel_luminance, roi_mean_luminance, luminance_histogram, build_colorbar
 )
 from .image_store import image_store
-from .routers import dashboard, isoline
+from .routers import dashboard, isoline, change_narrative
 
 app = FastAPI()
 
 app.include_router(dashboard.router)
 app.include_router(isoline.router)
+app.include_router(change_narrative.router)
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:4173",
-        "http://localhost:3000",
-        "https://ldp-frontend.onrender.com"
-    ],
+    allow_origins=["*"],  # For dev convenience, allow all. In prod, lock this down.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

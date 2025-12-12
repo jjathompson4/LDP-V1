@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Sun, Table2, Settings, CircleDotDashed, Lightbulb } from 'lucide-react';
+import { LayoutDashboard, Sun, Table2, Settings, CircleDotDashed, Lightbulb, FileDiff } from 'lucide-react';
 import clsx from 'clsx';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -82,6 +82,21 @@ export const ShellLayout: React.FC = () => {
                     >
                         <CircleDotDashed className="w-5 h-5" />
                         <span className="font-medium">Isoline Generator</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/change-narrative"
+                        className={({ isActive }) =>
+                            clsx(
+                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                isActive
+                                    ? "bg-app-primary-soft text-app-primary shadow-sm border border-app-primary/20"
+                                    : "text-app-text-muted hover:bg-app-surface-hover hover:text-app-text"
+                            )
+                        }
+                    >
+                        <FileDiff className="w-5 h-5" />
+                        <span className="font-medium">Change Narrative</span>
                     </NavLink>
                 </nav>
 
