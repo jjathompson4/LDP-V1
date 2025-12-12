@@ -84,7 +84,7 @@ class HistogramResponse(BaseModel):
     bins: List[float]
     counts: List[int]
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     return {"message": "LDP Backend is running"}
 
