@@ -85,7 +85,7 @@ export interface DashboardSummary {
     activity: ActivityEvent[];
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API_BASE_URL as API_URL } from '../config';
 
 export const getProjects = async (): Promise<Project[]> => {
     const response = await fetch(`${API_URL}/api/projects`);

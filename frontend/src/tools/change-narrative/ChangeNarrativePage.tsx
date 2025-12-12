@@ -4,6 +4,7 @@ import { GeminiKeyModal } from '../../shared/ai/GeminiKeyModal';
 import { callGemini } from '../../shared/ai/geminiClient';
 import type { ComparisonResponse, SheetData } from './types';
 import { SheetStatus } from './types';
+import { API_BASE_URL as API_URL } from '../../config';
 
 // Components
 import { FileUploadSection } from './components/FileUploadSection';
@@ -51,8 +52,8 @@ const ChangeNarrativePage: React.FC = () => {
             formData.append('previousPdf', prevPdf);
             formData.append('currentPdf', currPdf);
 
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const res = await fetch(`${apiUrl}/api/change-narrative/compare`, {
+            // const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const res = await fetch(`${API_URL}/api/change-narrative/compare`, {
                 method: 'POST',
                 body: formData
             });

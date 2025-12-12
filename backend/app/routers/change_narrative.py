@@ -1,12 +1,13 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from pydantic import BaseModel
 from typing import List, Optional, Set, Dict, Any
-import fitz  # PyMuPDF
+# import fitz  # PyMuPDF (Lazy loaded)
 import re
 import base64
-import numpy as np
+# import numpy as np (Lazy loaded)
 import logging
 from io import BytesIO
+import gc
 from enum import Enum
 
 router = APIRouter(prefix="/api/change-narrative", tags=["change-narrative"])
@@ -313,6 +314,7 @@ def extract_sheet_info_spatial(page, page_index: int) -> Dict[str, Any]:
     }
 
 def render_page_base64(page, zoom=1.0) -> str:
+    import fitz
     mat = fitz.Matrix(zoom, zoom)
     pix = page.get_pixmap(matrix=mat)
     # Convert to PNG in memory
@@ -320,6 +322,8 @@ def render_page_base64(page, zoom=1.0) -> str:
     return base64.b64encode(img_data).decode('utf-8')
 
 def compute_diff_score(page1, page2) -> float:
+    import fitz
+    import numpy as np
     # Render both at higher res for accurate text diffing (2.0 = ~144dpi)
     pix1 = page1.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
     pix2 = page2.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
@@ -408,6 +412,8 @@ async def compare_pdfs(
     try:
         prev_bytes = await previousPdf.read()
         curr_bytes = await currentPdf.read()
+        import fitz
+        
         doc_prev = fitz.open(stream=BytesIO(prev_bytes), filetype="pdf")
         doc_curr = fitz.open(stream=BytesIO(curr_bytes), filetype="pdf")
         
@@ -423,6 +429,8 @@ async def compare_pdfs(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    # try:
         
     all_nums = set(prev_sheets.keys()) | set(curr_sheets.keys())
     sheet_results = []
@@ -484,6 +492,20 @@ async def compare_pdfs(
             changes=sheet_changes
         ))
         
+    # FORCE CLEANUP
+    # Close documents and force garbage collection to release memory immediately
+    try:
+        doc_prev.close()
+        doc_curr.close()
+    except:
+        pass
+    
+    del doc_prev
+    del doc_curr
+    del prev_bytes
+    del curr_bytes
+    gc.collect()
+
     return ComparisonResponse(
         sheets=sheet_results,
         tagConsistency=TagConsistencyReport(warnings=[])

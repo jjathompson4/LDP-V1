@@ -70,7 +70,7 @@ const submitForm = (url: string, data: any) => {
     document.body.removeChild(form);
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API_BASE_URL as API_URL } from '../config';
 
 export const isolineService = {
     compute: async (file: File, params: ComputeRequest) => {

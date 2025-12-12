@@ -1,5 +1,6 @@
 import type { Fixture, ColumnConfig } from '../types';
 import * as XLSX from 'xlsx';
+import { API_BASE_URL as API_URL } from '../../../config';
 
 /**
  * Exports an array of Fixture objects to an XLSX file, preserving column widths and row heights.
@@ -88,7 +89,9 @@ export const exportToXLSX = (
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
 
     // Submit to proxy
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // Submit to proxy
+    // const API_URL was moved to import
+
 
     submitForm(`${API_URL}/download-proxy`, {
         filename: `${fileName}.xlsx`,
