@@ -324,7 +324,8 @@ def render_page_base64(page, zoom=1.0) -> str:
 def compute_diff_score(page1, page2) -> float:
     import fitz
     import numpy as np
-    # Render both at higher res for accurate text diffing (2.0 = ~144dpi)
+    import gc
+    # Render both at high resolution (2.0 = ~144dpi) as requested
     pix1 = page1.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
     pix2 = page2.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
     
@@ -332,27 +333,28 @@ def compute_diff_score(page1, page2) -> float:
     if pix1.width != pix2.width or pix1.height != pix2.height:
         return 1.0 # different dimensions = changed
     
-    # Convert to numpy arrays for pixel diff
-    # pix.samples is bytes
-    # This is a crude pixel diff.
-    # Ideally use PIL or OpenCV, but we want minimal deps if possible.
-    # We can use pure python loop if small, or just comparing bytes.
-    
     if pix1.samples == pix2.samples:
         return 0.0
     
-    # If different, we can calculate a % difference
-    # But for now, any difference returns 1.0 (REVISED)
-    # To be more robust against minor artifacting, we'd need pixel comparison.
-    # Since we have numpy in env:
     try:
+        # CRITICAL MEMORY OPTIMIZATION:
+        # Avoid the default 'astype(int)' which uses 64-bit integers.
+        # For a large sheet, 64-bit diffs take ~432MB. 
+        # Using int16 takes only ~108MB.
         arr1 = np.frombuffer(pix1.samples, dtype=np.uint8)
         arr2 = np.frombuffer(pix2.samples, dtype=np.uint8)
         
-        diff = np.abs(arr1.astype(int) - arr2.astype(int))
+        # Mean absolute difference using smaller bit-depth
+        diff = np.abs(arr1.astype(np.int16) - arr2.astype(np.int16))
         mean_diff = np.mean(diff)
+        
+        # Cleanup immediately
+        del pix1, pix2, arr1, arr2, diff
+        gc.collect()
+        
         return float(mean_diff)
-    except:
+    except Exception as e:
+        logging.error(f"Diff error: {e}")
         return 1.0
 
 def compute_spatial_diff(prev_blocks, curr_blocks) -> List[ChangeItem]:
