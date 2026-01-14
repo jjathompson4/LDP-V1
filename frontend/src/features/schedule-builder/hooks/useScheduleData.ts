@@ -68,7 +68,8 @@ export const useScheduleData = ({ columns, apiKey, onApiKeyRequired, onScheduleV
 
         const visibleColumns = columns.filter(c => c.visible);
 
-        for (const file of files) {
+        // Process all files in parallel
+        await Promise.all(files.map(async (file) => {
             // Update status to processing for the current file
             setProcessedFiles(prev => prev.map(pf => (pf.name === file.name && pf.status === 'pending' ? { ...pf, status: 'processing' } : pf)));
 
@@ -116,7 +117,7 @@ export const useScheduleData = ({ columns, apiKey, onApiKeyRequired, onScheduleV
                 console.error(`Error processing ${file.name}:`, error);
                 setProcessedFiles(prev => prev.map(pf => pf.name === file.name ? { ...pf, status: 'error', error: (error as Error).message } : pf));
             }
-        }
+        }));
 
         setIsProcessing(false);
     }, [columns, onApiKeyRequired, onScheduleVisibilityChange, apiKey]);

@@ -12,7 +12,7 @@ interface CallGeminiParams {
 
 export const callGemini = async ({
     apiKey,
-    model = 'gemini-2.0-flash',
+    model = 'gemini-3-flash-preview',
     systemInstruction,
     parts,
     responseSchema,
@@ -20,6 +20,7 @@ export const callGemini = async ({
     temperature
 }: CallGeminiParams): Promise<string> => {
     try {
+        console.log(`[Gemini API] Querying model: ${model}`);
         const ai = new GoogleGenAI({ apiKey });
 
         // Configure options
