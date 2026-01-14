@@ -62,7 +62,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
     isComparing, onCompare
 }) => {
     return (
-        <div className="p-6 space-y-4 border-b border-app-border">
+        <div className="p-0 space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="text-xs font-semibold text-app-text-muted">Project Name</label>

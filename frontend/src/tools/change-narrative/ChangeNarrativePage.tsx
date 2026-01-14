@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAiConfig } from '../../shared/ai/aiConfigContext';
+import { FileDiff } from 'lucide-react';
 import { GeminiKeyModal } from '../../shared/ai/GeminiKeyModal';
 import { callGemini } from '../../shared/ai/geminiClient';
 import type { ComparisonResponse, SheetData } from './types';
@@ -184,38 +185,46 @@ const ChangeNarrativePage: React.FC = () => {
                 setText={setTransmittalText}
             />
 
-            {/* Header */}
-            <header className="flex-shrink-0 bg-app-surface border-b border-app-border p-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold">Change Narrative Generator</h1>
-                    <p className="text-app-text-muted text-sm">Compare PDF sets, detect changes, and generate narratives.</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    {!geminiApiKey && (
-                        <div className="text-xs bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full border border-yellow-500/20">
-                            AI Disconnected
+            {/* Standardized Header */}
+            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                            <FileDiff className="w-5 h-5 text-white" />
                         </div>
-                    )}
-                    <button
-                        onClick={() => setIsKeyModalOpen(true)}
-                        className="text-sm text-app-primary hover:underline"
-                    >
-                        {geminiApiKey ? 'Update API Key' : 'Enter API Key'}
-                    </button>
+                        <div>
+                            <h1 className="text-xl font-bold text-app-text">Change Narrative Generator</h1>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {!geminiApiKey && (
+                            <div className="text-xs bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full border border-yellow-500/20">
+                                AI Disconnected
+                            </div>
+                        )}
+                        <button
+                            onClick={() => setIsKeyModalOpen(true)}
+                            className="text-sm text-app-primary hover:underline"
+                        >
+                            {geminiApiKey ? 'Update API Key' : 'Enter API Key'}
+                        </button>
+                    </div>
                 </div>
             </header>
 
             {/* Main Body */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel */}
-                <div className="w-1/3 min-w-[400px] flex flex-col border-r border-app-border bg-app-surface/30">
-                    <FileUploadSection
-                        project={project} setProject={setProject}
-                        revision={revision} setRevision={setRevision}
-                        prevPdf={prevPdf} setPrevPdf={setPrevPdf}
-                        currPdf={currPdf} setCurrPdf={setCurrPdf}
-                        isComparing={isComparing} onCompare={handleCompare}
-                    />
+            <div className="flex-1 flex overflow-hidden p-6 gap-6">
+                {/* Left Sidebar: Controls & Files */}
+                <div className="w-80 flex-shrink-0 flex flex-col gap-4 overflow-y-auto">
+                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4">
+                        <FileUploadSection
+                            project={project} setProject={setProject}
+                            revision={revision} setRevision={setRevision}
+                            prevPdf={prevPdf} setPrevPdf={setPrevPdf}
+                            currPdf={currPdf} setCurrPdf={setCurrPdf}
+                            isComparing={isComparing} onCompare={handleCompare}
+                        />
+                    </div>
 
                     <SidebarList
                         results={results}
@@ -230,13 +239,17 @@ const ChangeNarrativePage: React.FC = () => {
                     />
                 </div>
 
-                {/* Right Panel */}
-                <div className="flex-1 overflow-y-auto bg-app-bg p-8">
-                    <SheetDetailView
-                        sheetId={selectedSheetId}
-                        sheets={sheets}
-                        setSheets={setSheets}
-                    />
+                {/* Main Content: Detail View */}
+                <div className="flex-1 bg-app-surface/30 border border-app-border rounded-2xl overflow-hidden relative">
+                    <div className="h-full overflow-y-auto p-8">
+                        <SheetDetailView
+                            sheetId={selectedSheetId}
+                            sheets={sheets}
+                            setSheets={setSheets}
+                            prevPdf={prevPdf}
+                            currPdf={currPdf}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

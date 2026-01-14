@@ -401,6 +401,14 @@ def compute_spatial_diff(prev_blocks, curr_blocks) -> List[ChangeItem]:
     
     return [item for _, _, item in raw_changes]
 
+def get_session_id(prev_pdf: bytes, curr_pdf: bytes) -> str:
+    """Generate a stable session ID based on file contents."""
+    import hashlib
+    h = hashlib.md5()
+    h.update(prev_pdf[:1000]) # First 1000 bytes for speed
+    h.update(curr_pdf[:1000])
+    return h.hexdigest()
+
 # --- Endpoint ---
 
 @router.post("/compare", response_model=ComparisonResponse)
@@ -408,105 +416,130 @@ async def compare_pdfs(
     previousPdf: UploadFile = File(...),
     currentPdf: UploadFile = File(...)
 ):
-    # ... (File loading same as before) ...
     try:
         prev_bytes = await previousPdf.read()
         curr_bytes = await currentPdf.read()
-        import fitz
         
+        import fitz
+        import gc
+
         doc_prev = fitz.open(stream=BytesIO(prev_bytes), filetype="pdf")
         doc_curr = fitz.open(stream=BytesIO(curr_bytes), filetype="pdf")
         
+        # 1. Quickly extract sheet numbers and titles (Metadata phase)
         prev_sheets = {}
         for i, page in enumerate(doc_prev):
             info = extract_sheet_info_spatial(page, i)
-            prev_sheets[info['sheetNumber']] = {'page': page, 'info': info}
+            prev_sheets[info['sheetNumber']] = {'info': info, 'page_index': i}
             
         curr_sheets = {}
         for i, page in enumerate(doc_curr):
             info = extract_sheet_info_spatial(page, i)
-            curr_sheets[info['sheetNumber']] = {'page': page, 'info': info}
+            curr_sheets[info['sheetNumber']] = {'info': info, 'page_index': i}
             
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    # try:
+        all_nums = sorted(set(prev_sheets.keys()) | set(curr_sheets.keys()))
+        sheet_results = []
         
-    all_nums = set(prev_sheets.keys()) | set(curr_sheets.keys())
-    sheet_results = []
-    
-    for num in sorted(all_nums):
-        prev = prev_sheets.get(num)
-        curr = curr_sheets.get(num)
-        
-        status = SheetStatus.UNCHANGED
-        diff_score = 0.0
-        prev_b64 = None
-        curr_b64 = None
-        sheet_changes = []
-        
-        kind = SheetKind.OTHER
-        sheet_title = ""
+        # 2. Compare sheets (Math phase - NO IMAGES)
+        for num in all_nums:
+            prev = prev_sheets.get(num)
+            curr = curr_sheets.get(num)
+            
+            status = SheetStatus.UNCHANGED
+            diff_score = 0.0
+            sheet_changes = []
+            kind = SheetKind.OTHER
+            sheet_title = ""
 
-        if prev and curr:
-            kind = curr['info']['kind']
-            sheet_title = curr['info']['sheetTitle']
-            
-            diff_score = compute_diff_score(prev['page'], curr['page'])
-            
-            # Spatial Diff
-            sheet_changes = compute_spatial_diff(prev['info']['textBlocks'], curr['info']['textBlocks'])
-            
-            # Revised if visual diff OR text diff found
-            if diff_score > 0.001 or len(sheet_changes) > 0:
-                status = SheetStatus.REVISED
-                prev_b64 = render_page_base64(prev['page'], 0.5)
-                curr_b64 = render_page_base64(curr['page'], 0.5)
+            if prev and curr:
+                kind = curr['info']['kind']
+                sheet_title = curr['info']['sheetTitle']
                 
-        elif prev and not curr:
-            status = SheetStatus.REMOVED
-            kind = prev['info']['kind']
-            sheet_title = prev['info']['sheetTitle']
-            prev_b64 = render_page_base64(prev['page'], 0.5)
+                # Perform the math for diffing (High res but temporary)
+                page_prev = doc_prev[prev['page_index']]
+                page_curr = doc_curr[curr['page_index']]
+                
+                diff_score = compute_diff_score(page_prev, page_curr)
+                sheet_changes = compute_spatial_diff(prev['info']['textBlocks'], curr['info']['textBlocks'])
+                
+                if diff_score > 0.001 or len(sheet_changes) > 0:
+                    status = SheetStatus.REVISED
+                
+            elif prev and not curr:
+                status = SheetStatus.REMOVED
+                kind = prev['info']['kind']
+                sheet_title = prev['info']['sheetTitle']
+                
+            elif not prev and curr:
+                status = SheetStatus.NEW
+                kind = curr['info']['kind']
+                sheet_title = curr['info']['sheetTitle']
+                
+            sheet_results.append(SheetData(
+                sheetId=f"{num}-{status}",
+                sheetNumber=num,
+                sheetTitle=sheet_title,
+                status=status,
+                sheetKind=kind,
+                diffScore=diff_score if status == SheetStatus.REVISED else None,
+                previousPreviewBase64=None, # STRIPPED
+                currentPreviewBase64=None,  # STRIPPED
+                warningsForSheet=[],
+                changes=sheet_changes
+            ))
             
-        elif not prev and curr:
-            status = SheetStatus.NEW
-            kind = curr['info']['kind']
-            sheet_title = curr['info']['sheetTitle']
-            curr_b64 = render_page_base64(curr['page'], 0.5)
-            # For new sheets, all text is "Added"
-            # Maybe too noisy? Let's skip detailed text diff for NEW sheets for now, 
-            # or treat all blocks as added.
-            pass
-            
-        sheet_results.append(SheetData(
-            sheetId=f"{num}-{status}",
-            sheetNumber=num,
-            sheetTitle=sheet_title,
-            status=status,
-            sheetKind=kind,
-            diffScore=diff_score if status == SheetStatus.REVISED else None,
-            previousPreviewBase64=prev_b64,
-            currentPreviewBase64=curr_b64,
-            warningsForSheet=[],
-            changes=sheet_changes
-        ))
-        
-    # FORCE CLEANUP
-    # Close documents and force garbage collection to release memory immediately
-    try:
+            # Flush memory after each page pair
+            gc.collect()
+
         doc_prev.close()
         doc_curr.close()
-    except:
-        pass
-    
-    del doc_prev
-    del doc_curr
-    del prev_bytes
-    del curr_bytes
-    gc.collect()
+        
+        return ComparisonResponse(
+            sheets=sheet_results,
+            tagConsistency=TagConsistencyReport(warnings=[])
+        )
 
-    return ComparisonResponse(
-        sheets=sheet_results,
-        tagConsistency=TagConsistencyReport(warnings=[])
-    )
+    except Exception as e:
+        logging.error(f"Comparison Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/preview")
+async def get_preview(
+    sheetNumber: str = Form(...),
+    previousPdf: UploadFile = File(...),
+    currentPdf: UploadFile = File(...)
+):
+    """Specific high-res preview for a single sheet, on-demand."""
+    try:
+        prev_bytes = await previousPdf.read()
+        curr_bytes = await currentPdf.read()
+        
+        import fitz
+        doc_prev = fitz.open(stream=BytesIO(prev_bytes), filetype="pdf")
+        doc_curr = fitz.open(stream=BytesIO(curr_bytes), filetype="pdf")
+        
+        prev_b64 = None
+        curr_b64 = None
+        
+        # Find the specific sheet in both
+        for page in doc_prev:
+            info = extract_sheet_info_spatial(page, page.number)
+            if info['sheetNumber'] == sheetNumber:
+                prev_b64 = render_page_base64(page, 2.0) # High Res
+                break
+                
+        for page in doc_curr:
+            info = extract_sheet_info_spatial(page, page.number)
+            if info['sheetNumber'] == sheetNumber:
+                curr_b64 = render_page_base64(page, 2.0) # High Res
+                break
+        
+        doc_prev.close()
+        doc_curr.close()
+        
+        return {
+            "previous": prev_b64,
+            "current": curr_b64
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
