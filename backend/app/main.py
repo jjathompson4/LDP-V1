@@ -23,7 +23,11 @@ app.include_router(change_narrative.router)
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For dev convenience, allow all. In prod, lock this down.
+    allow_origins=[
+        "https://ldp-frontend.onrender.com",
+        "http://localhost:5173",
+        "http://localhost:4173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
