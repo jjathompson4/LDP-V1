@@ -21,7 +21,8 @@ To maintain consistency, all new tools must adhere to the defined tokens in `fro
 
 ### Layout Patterns
 - **Shell**: Every page is rendered within `ShellLayout.tsx`, featuring a 64w sidebar and a scrollable main content area.
-- **Panels**: Use `app-surface` cards with `rounded-2xl` and `border-app-border` for modular sections.
+- **Header**: Standardized header height with a 64x64 icon box (bg-app-primary), `text-xl` font, and `backdrop-blur` surface.
+- **Sidebar & Panels**: Tool sidebars are standardized to `w-80`. Main content areas should use the `bg-app-surface/30` background with `rounded-2xl` and `border-app-border`.
 - **Responsiveness**: Focus on desktop-first professional use, but maintain fluid layouts for large monitors.
 
 ## Industry Context (Lighting Design)
@@ -33,5 +34,6 @@ New tools should leverage the following domain knowledge:
 
 ## Development Patterns
 - **Parallel Processing**: When handling multiple files, use `Promise.all` for concurrent processing to maintain "Flash" speed.
-- **API Communication**: The frontend communicates with the backend via `/render`, `/upload`, and `/isoline` endpoints using a session-based image store.
+- **On-Demand Streaming**: For resource-intensive tasks (like PDF diffing), use a "Lazy Hydration" model. Only fetch high-res previews or heavy data when a specific item is selected/focused to avoid Server OOM errors.
+- **API Communication**: The frontend communicates with the backend via `/render`, `/upload`, `/isoline`, and `/change-narrative` endpoints using a session-based image store.
 - **Routing**: Add new features to `App.tsx` and register them in the `ShellLayout.tsx` navigation sidebar.
