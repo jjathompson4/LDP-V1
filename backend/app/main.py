@@ -12,15 +12,9 @@ from .processing import (
     pixel_luminance, roi_mean_luminance, luminance_histogram, build_colorbar
 )
 from .image_store import image_store
-from .routers import dashboard, isoline, change_narrative
-
 app = FastAPI()
 
-app.include_router(dashboard.router)
-app.include_router(isoline.router)
-app.include_router(change_narrative.router)
-
-# Configure CORS
+# Configure CORS IMMEDIATELY
 origins = [
     "https://ldp-frontend.onrender.com",
     "http://localhost:5173",
@@ -33,11 +27,22 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 @app.on_event("startup")
 async def startup_event():
     print("Backend server is starting up...")
+    # Only import heavy routers after the process has started
+    from .routers import dashboard, isoline, change_narrative
+    app.include_router(dashboard.router)
+    app.include_router(isoline.router)
+    app.include_router(change_narrative.router)
+    print("Backend server is fully loaded with routers.")
+
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root():
+    return {"status": "ok", "message": "LDP Backend is running"}
 
 class UploadResponse(BaseModel):
     sessionId: str
