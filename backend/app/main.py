@@ -21,13 +21,23 @@ app.include_router(isoline.router)
 app.include_router(change_narrative.router)
 
 # Configure CORS
+origins = [
+    "https://ldp-frontend.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:4173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    print("Backend server is starting up...")
 
 class UploadResponse(BaseModel):
     sessionId: str
