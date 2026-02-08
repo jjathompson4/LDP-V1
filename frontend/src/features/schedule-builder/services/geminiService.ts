@@ -4,7 +4,11 @@ import type { Fixture, ColumnConfig } from '../types';
 import { callGemini } from "../../../shared/ai/geminiClient";
 
 const generateFixtureSchema = (columns: ColumnConfig[]) => {
-    const properties: { [key: string]: any } = {};
+    const properties: Record<string, {
+        type: Type;
+        description: string;
+        items?: { type: Type };
+    }> = {};
     const required: string[] = ['manufacturer', 'series', 'designation', 'description'];
 
     columns.forEach(col => {

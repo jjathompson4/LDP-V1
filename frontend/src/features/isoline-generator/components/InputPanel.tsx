@@ -2,6 +2,13 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import type { ComputeRequest, IsolineLevel } from '../../../services/isolineService';
 import { DropZone } from '../../../components/shared/DropZone';
+import {
+    TOOL_CARD_PADDED,
+    TOOL_CARD_TITLE,
+    TOOL_INPUT,
+    TOOL_SELECT,
+    TOOL_SECTION_LABEL
+} from '../../../styles/toolStyleTokens';
 
 export interface InputPanelHandle {
     getParams: () => { params: ComputeRequest | null; error: string | null };
@@ -86,18 +93,18 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
         setIsoLevels(isoLevels.filter((_, i) => i !== index));
     };
 
-    const updateIsoLevel = (index: number, field: keyof IsolineLevel, value: any) => {
+    const updateIsoLevel = (index: number, field: keyof IsolineLevel, value: string | number) => {
         const newLevels = [...isoLevels];
         newLevels[index] = { ...newLevels[index], [field]: value };
         setIsoLevels(newLevels);
     };
 
     return (
-        <div className="h-full overflow-y-auto pr-2 flex flex-col gap-4">
+        <div className="h-full overflow-y-auto flex flex-col gap-4">
 
             {/* Card 1: Upload IES File */}
-            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
-                <h3 className="text-sm font-medium text-app-text mb-3">1. Upload IES File</h3>
+            <div className={TOOL_CARD_PADDED}>
+                <h3 className={`${TOOL_CARD_TITLE} mb-3`}>1. Upload IES File</h3>
                 <div className="w-full">
                     <DropZone
                         onFilesSelected={handleFilesSelected}
@@ -109,7 +116,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                         compact={true}
                     />
                     {file && (
-                        <div className="mt-2 p-2 text-xs bg-app-surface-hover rounded text-app-text-muted border border-app-border">
+                        <div className="mt-2 p-2 text-xs bg-app-surface-hover rounded-xl text-app-text-muted border border-app-border">
                             Selected: <span className="font-semibold text-app-text">{file.name}</span>
                         </div>
                     )}
@@ -117,15 +124,15 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
             </div>
 
             {/* Card 2: Mounting & Geometry Info */}
-            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
-                <h3 className="text-sm font-medium text-app-text mb-3">2. Mounting & Geometry</h3>
+            <div className={TOOL_CARD_PADDED}>
+                <h3 className={`${TOOL_CARD_TITLE} mb-3`}>2. Mounting & Geometry</h3>
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-xs text-app-text-muted mb-1">Units</label>
                         <select
                             value={units}
                             onChange={(e) => setUnits(e.target.value as 'ft' | 'm')}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            className={TOOL_SELECT}
                         >
                             <option value="ft">Feet</option>
                             <option value="m">Meters</option>
@@ -137,7 +144,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                             type="number"
                             value={mh}
                             onChange={(e) => setMh(parseFloat(e.target.value))}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            className={TOOL_INPUT}
                         />
                     </div>
                     <div>
@@ -146,7 +153,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                             type="number"
                             value={calcPlane}
                             onChange={(e) => setCalcPlane(parseFloat(e.target.value))}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            className={TOOL_INPUT}
                         />
                     </div>
                     <div>
@@ -156,7 +163,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                             step="0.01"
                             value={llf}
                             onChange={(e) => setLlf(parseFloat(e.target.value))}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            className={TOOL_INPUT}
                             title="Light Loss Factor"
                         />
                     </div>
@@ -164,8 +171,8 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
             </div>
 
             {/* Card 3: Available Drawing Space, detail level, scale bar & grid */}
-            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
-                <h3 className="text-sm font-medium text-app-text mb-3">3. Display Settings</h3>
+            <div className={TOOL_CARD_PADDED}>
+                <h3 className={`${TOOL_CARD_TITLE} mb-3`}>3. Display Settings</h3>
                 <div className="flex flex-col gap-3">
                     <div>
                         <label className="block text-xs text-app-text-muted mb-1">Drawing Radius (x MH)</label>
@@ -173,7 +180,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                             type="number"
                             value={radiusFactor}
                             onChange={(e) => setRadiusFactor(parseFloat(e.target.value))}
-                            className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                            className={TOOL_INPUT}
                         />
                     </div>
                     <div>
@@ -186,7 +193,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                                         name="detailLevel"
                                         value={level}
                                         checked={detailLevel === level}
-                                        onChange={(e) => setDetailLevel(e.target.value as any)}
+                                        onChange={(e) => setDetailLevel(e.target.value as 'low' | 'medium' | 'high')}
                                         className="text-app-primary focus:ring-app-primary bg-app-bg border-app-border"
                                     />
                                     {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -201,7 +208,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                                 type="number"
                                 value={scaleBarLength}
                                 onChange={(e) => setScaleBarLength(parseFloat(e.target.value))}
-                                className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                                className={TOOL_INPUT}
                             />
                         </div>
                         <div>
@@ -209,7 +216,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                             <select
                                 value={gridSize || ''}
                                 onChange={(e) => setGridSize(e.target.value ? parseFloat(e.target.value) : null)}
-                                className="w-full bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm focus:ring-app-primary focus:border-app-primary"
+                                className={TOOL_SELECT}
                             >
                                 <option value="">None</option>
                                 <option value="1">1x1 {currentUnits}</option>
@@ -222,8 +229,8 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
             </div>
 
             {/* Card 4: Output Units & Isoline Parameters */}
-            <div className="p-4 bg-app-surface rounded-lg shadow-sm border border-app-border">
-                <h3 className="text-sm font-medium text-app-text mb-3">4. Output & Isolines</h3>
+            <div className={TOOL_CARD_PADDED}>
+                <h3 className={`${TOOL_CARD_TITLE} mb-3`}>4. Output & Isolines</h3>
                 <div className="flex flex-col gap-4">
                     <div>
                         <label className="block text-xs text-app-text-muted mb-2">Output Units</label>
@@ -255,7 +262,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
 
                     <div>
                         <div className="flex justify-between items-center mb-2">
-                            <label className="text-xs text-app-text-muted">Isoline Levels (Max 5)</label>
+                            <label className={TOOL_SECTION_LABEL}>Isoline Levels (Max 5)</label>
                             <button
                                 onClick={addIsoLevel}
                                 disabled={isoLevels.length >= 5}
@@ -272,7 +279,7 @@ const InputPanel = forwardRef<InputPanelHandle, InputPanelProps>(({
                                         step="0.1"
                                         value={level.value}
                                         onChange={(e) => updateIsoLevel(idx, 'value', parseFloat(e.target.value))}
-                                        className="w-20 bg-app-bg border-app-border text-app-text rounded-md shadow-sm text-sm p-1 focus:ring-app-primary focus:border-app-primary"
+                                        className={`${TOOL_INPUT} w-20 p-1`}
                                         placeholder="Value"
                                     />
                                     <input

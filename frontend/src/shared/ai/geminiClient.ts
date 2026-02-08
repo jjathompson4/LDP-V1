@@ -1,10 +1,14 @@
 import { GoogleGenAI, type Schema } from "@google/genai";
 
+type GeminiTextPart = { text: string };
+type GeminiInlineDataPart = { inlineData: { mimeType: string; data: string } };
+type GeminiPart = GeminiTextPart | GeminiInlineDataPart;
+
 interface CallGeminiParams {
     apiKey: string;
     model?: string;
     systemInstruction?: string;
-    parts: any[]; // Using any[] for flexibility with the SDK's content types
+    parts: GeminiPart[];
     responseSchema?: Schema;
     responseMimeType?: string;
     temperature?: number;
@@ -24,7 +28,12 @@ export const callGemini = async ({
         const ai = new GoogleGenAI({ apiKey });
 
         // Configure options
-        const config: any = {};
+        const config: {
+            responseMimeType?: string;
+            responseSchema?: Schema;
+            systemInstruction?: string;
+            generationConfig?: { temperature: number };
+        } = {};
         if (responseMimeType) config.responseMimeType = responseMimeType;
         if (responseSchema) config.responseSchema = responseSchema;
         if (systemInstruction) config.systemInstruction = systemInstruction;
@@ -46,9 +55,10 @@ export const callGemini = async ({
         }
         return text;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error in callGemini:", error);
-        if (error.message?.includes("API key not valid") || error.message?.includes("API_KEY_INVALID")) {
+        const message = error instanceof Error ? error.message : '';
+        if (message.includes("API key not valid") || message.includes("API_KEY_INVALID")) {
             throw new Error("The Gemini API key is invalid.");
         }
         throw error;

@@ -25,7 +25,7 @@ export interface Fixture {
     driverInfo: string;
     notes: string;
     // Allow for custom, dynamic string properties
-    [key: string]: any;
+    [key: string]: string | string[] | undefined;
 }
 
 export type FileStatus = 'pending' | 'processing' | 'success' | 'error';

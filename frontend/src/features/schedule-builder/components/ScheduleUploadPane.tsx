@@ -1,6 +1,7 @@
 import React from 'react';
 import { UploadCloud, ChevronUp, ChevronDown } from 'lucide-react';
 import { DropZone } from '../../../components/shared/DropZone';
+import { TOOL_CARD, TOOL_CARD_TITLE, TOOL_ICON_BUTTON } from '../../../styles/toolStyleTokens';
 
 interface ScheduleUploadPaneProps {
     isExpanded: boolean;
@@ -16,17 +17,17 @@ export const ScheduleUploadPane: React.FC<ScheduleUploadPaneProps> = ({
     isProcessing
 }) => {
     return (
-        <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border">
+        <div className={TOOL_CARD}>
             <div className={`p-3 sm:p-4 ${isExpanded ? 'border-b border-app-border/50' : ''}`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <UploadCloud className="w-5 h-5 text-app-text-muted" />
-                        <h3 className="text-lg font-semibold text-app-text">Upload Product Data Sheets</h3>
+                        <h3 className={TOOL_CARD_TITLE}>Upload Product Data Sheets</h3>
                     </div>
                     <button
                         onClick={onToggle}
                         aria-label={isExpanded ? "Collapse upload section" : "Expand upload section"}
-                        className="p-1.5 rounded-md text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary"
+                        className={TOOL_ICON_BUTTON}
                     >
                         {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>

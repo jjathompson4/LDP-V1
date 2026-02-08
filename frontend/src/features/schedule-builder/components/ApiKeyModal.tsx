@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Key } from 'lucide-react';
+import { TOOL_BUTTON_PRIMARY, TOOL_INPUT } from '../../../styles/toolStyleTokens';
 
 interface ApiKeyModalProps {
     onSave: (apiKey: string) => void;
@@ -27,7 +28,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, isVisible }) =
 
     return (
         <div className="fixed inset-0 bg-app-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-app-surface border border-app-border rounded-2xl shadow-lg w-full max-w-md p-8 text-center">
+            <div className="bg-app-surface border border-app-primary/30 rounded-2xl w-full max-w-md p-8 text-center">
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-app-surface-hover mb-5">
                     <Key className="h-6 w-6 text-app-primary" />
                 </div>
@@ -42,7 +43,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, isVisible }) =
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-4 py-2 bg-app-bg border border-app-border rounded-lg text-app-text focus:outline-none focus:ring-2 focus:ring-app-primary focus:border-transparent transition-all"
+                        className={TOOL_INPUT}
                         placeholder="AIzaSy..."
                     />
                     <p className="mt-3 text-xs text-app-text-muted">
@@ -52,7 +53,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, isVisible }) =
                 <button
                     onClick={handleSave}
                     disabled={!apiKey.trim()}
-                    className="w-full bg-app-primary text-white font-semibold py-2.5 px-5 rounded-lg shadow-md hover:bg-app-primary-hover disabled:bg-app-surface-hover disabled:text-app-text-muted disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary focus:ring-offset-2 focus:ring-offset-app-surface"
+                    className={`w-full ${TOOL_BUTTON_PRIMARY} disabled:bg-app-surface-hover disabled:text-app-text-muted`}
                 >
                     Save & Continue
                 </button>

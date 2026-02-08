@@ -53,7 +53,7 @@ export interface ExportOptions {
     fileName?: string;
 }
 
-const submitForm = (url: string, data: any) => {
+const submitForm = (url: string, data: Record<string, unknown>) => {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = url;

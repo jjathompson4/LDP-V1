@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Fixture } from '../features/schedule-builder/types';
 import type { AnalysisResult } from '../features/luminance-analysis/services/analysisService';

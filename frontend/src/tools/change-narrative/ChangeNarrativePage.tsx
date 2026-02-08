@@ -12,6 +12,8 @@ import { FileUploadSection } from './components/FileUploadSection';
 import { SidebarList } from './components/SidebarList';
 import { SheetDetailView } from './components/SheetDetailView';
 import { TransmittalModal } from './components/TransmittalModal';
+import { PAGE_LAYOUT } from '../../layouts/pageLayoutTokens';
+import { TOOL_CANVAS_SURFACE, TOOL_CARD_PADDED, TOOL_PAGE_TITLE } from '../../styles/toolStyleTokens';
 
 const ChangeNarrativePage: React.FC = () => {
     const { geminiApiKey } = useAiConfig();
@@ -34,6 +36,7 @@ const ChangeNarrativePage: React.FC = () => {
 
     // AI State
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Derived
     const displayedSheets = useMemo(() => {
@@ -48,6 +51,7 @@ const ChangeNarrativePage: React.FC = () => {
     const handleCompare = async () => {
         if (!prevPdf || !currPdf) return;
         setIsComparing(true);
+        setErrorMessage(null);
         try {
             const formData = new FormData();
             formData.append('previousPdf', prevPdf);
@@ -64,8 +68,13 @@ const ChangeNarrativePage: React.FC = () => {
                 try {
                     const errorData = await res.json();
                     errorMsg = errorData.detail || errorMsg;
-                } catch (e) {
-                    try { const text = await res.text(); if (text) errorMsg = text; } catch (e2) { }
+                } catch {
+                    try {
+                        const text = await res.text();
+                        if (text) errorMsg = text;
+                    } catch {
+                        // Ignore fallback parsing errors.
+                    }
                 }
                 throw new Error(errorMsg);
             }
@@ -73,9 +82,9 @@ const ChangeNarrativePage: React.FC = () => {
             const data: ComparisonResponse = await res.json();
             setResults(data);
             setSheets(data.sheets.map(s => ({ ...s, isIncluded: s.status !== SheetStatus.UNCHANGED })));
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            alert(`Error: ${e.message}`);
+            setErrorMessage(e instanceof Error ? e.message : 'Comparison failed.');
         } finally {
             setIsComparing(false);
         }
@@ -150,13 +159,14 @@ const ChangeNarrativePage: React.FC = () => {
                         detailedNarrative: parsed.detailedNarrative
                     };
                     setSheets([...newSheets]); // Update UI incrementally
-                } catch (e) {
+                } catch {
                     console.error("Failed to parse AI response for sheet " + sheet.sheetNumber);
                 }
             }
 
-        } catch (e) {
+        } catch (e: unknown) {
             console.error("AI Generation failed", e);
+            setErrorMessage('AI generation failed.');
         } finally {
             setIsGeneratingAi(false);
         }
@@ -176,7 +186,7 @@ const ChangeNarrativePage: React.FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col overflow-hidden bg-app-bg text-app-text">
+        <div className={PAGE_LAYOUT.root}>
             <GeminiKeyModal isVisible={isKeyModalOpen} onClose={() => setIsKeyModalOpen(false)} />
             <TransmittalModal
                 isOpen={isNarrativeModalOpen}
@@ -186,14 +196,14 @@ const ChangeNarrativePage: React.FC = () => {
             />
 
             {/* Standardized Header */}
-            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6 flex-shrink-0">
+            <header className={PAGE_LAYOUT.header}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                        <div className={PAGE_LAYOUT.headerIcon}>
                             <FileDiff className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-app-text">Change Narrative Generator</h1>
+                            <h1 className={TOOL_PAGE_TITLE}>Change Narrative Generator</h1>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -210,13 +220,16 @@ const ChangeNarrativePage: React.FC = () => {
                         </button>
                     </div>
                 </div>
+                {errorMessage && (
+                    <div className="mt-4 text-sm text-app-error">{errorMessage}</div>
+                )}
             </header>
 
             {/* Main Body */}
-            <div className="flex-1 flex overflow-hidden p-6 gap-6">
+            <div className={PAGE_LAYOUT.body}>
                 {/* Left Sidebar: Controls & Files */}
-                <div className="w-80 flex-shrink-0 flex flex-col gap-4 overflow-y-auto">
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4">
+                <aside className={PAGE_LAYOUT.sidebar}>
+                    <div className={TOOL_CARD_PADDED}>
                         <FileUploadSection
                             project={project} setProject={setProject}
                             revision={revision} setRevision={setRevision}
@@ -237,10 +250,10 @@ const ChangeNarrativePage: React.FC = () => {
                         onGenerateSummaries={handleGenerateSummaries}
                         onOpenTransmittal={openTransmittalModal}
                     />
-                </div>
+                </aside>
 
                 {/* Main Content: Detail View */}
-                <div className="flex-1 bg-app-surface/30 border border-app-border rounded-2xl overflow-hidden relative">
+                <div className={`${TOOL_CANVAS_SURFACE} flex-1 overflow-hidden relative`}>
                     <div className="h-full overflow-y-auto p-8">
                         <SheetDetailView
                             sheetId={selectedSheetId}

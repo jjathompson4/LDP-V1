@@ -19,6 +19,8 @@ import { BudgetSnapshotComponent } from '../components/dashboard/BudgetSnapshot'
 import { PlanSetStatusComponent } from '../components/dashboard/PlanSetStatus';
 import { RecentActivity } from '../components/dashboard/RecentActivity';
 import { DashboardWidget } from '../components/dashboard/DashboardWidget';
+import { PAGE_LAYOUT } from '../layouts/pageLayoutTokens';
+import { TOOL_BUTTON_SECONDARY, TOOL_PAGE_TITLE } from '../styles/toolStyleTokens';
 
 const Dashboard: React.FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -44,8 +46,8 @@ const Dashboard: React.FC = () => {
             try {
                 const data = await getProjects();
                 setProjects(data);
-                if (data.length > 0 && !selectedProjectId) {
-                    setSelectedProjectId(data[0].id);
+                if (data.length > 0) {
+                    setSelectedProjectId(prev => prev ?? data[0].id);
                 }
             } catch (err) {
                 setError('Failed to load projects');
@@ -176,7 +178,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('tasks', dir)}
                         headerAction={
                             <button
-                                className="text-xs bg-app-surface-hover hover:bg-app-border text-app-text px-2 py-1 rounded transition-colors border border-app-border"
+                                className={`${TOOL_BUTTON_SECONDARY} text-xs px-2 py-1`}
                                 onClick={() => setActiveModal('task')}
                             >
                                 + Add Task
@@ -199,7 +201,7 @@ const Dashboard: React.FC = () => {
                         onMove={(dir) => moveWidget('events', dir)}
                         headerAction={
                             <button
-                                className="text-xs bg-app-surface-hover hover:bg-app-border text-app-text px-2 py-1 rounded transition-colors border border-app-border"
+                                className={`${TOOL_BUTTON_SECONDARY} text-xs px-2 py-1`}
                                 onClick={() => setActiveModal('event')}
                             >
                                 + Add Event
@@ -303,13 +305,13 @@ const Dashboard: React.FC = () => {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
 
     return (
-        <div className="flex flex-col h-full bg-app-bg text-app-text">
-            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6 shrink-0 z-10">
+        <div className={PAGE_LAYOUT.root}>
+            <header className={`${PAGE_LAYOUT.header} z-10`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                    <div className={PAGE_LAYOUT.headerIcon}>
                         <LayoutDashboard className="w-5 h-5 text-white" />
                     </div>
-                    <h1 className="text-xl font-bold text-app-text tracking-tight">Dashboard</h1>
+                    <h1 className={TOOL_PAGE_TITLE}>Dashboard</h1>
                 </div>
             </header>
             <div className="p-6 overflow-auto flex-1">

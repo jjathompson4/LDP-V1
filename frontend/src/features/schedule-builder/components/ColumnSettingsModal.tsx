@@ -2,6 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { ExtractionSettings } from './ExtractionSettings';
 import type { ColumnConfig } from '../types';
+import { TOOL_BUTTON_PRIMARY, TOOL_ICON_BUTTON } from '../../../styles/toolStyleTokens';
 
 interface ColumnSettingsModalProps {
     isOpen: boolean;
@@ -20,7 +21,7 @@ export const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-app-surface w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-app-border flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-app-surface w-full max-w-4xl max-h-[90vh] rounded-2xl border border-app-primary/30 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="p-4 border-b border-app-border flex items-center justify-between bg-app-surface sticky top-0 z-10">
                     <div>
@@ -29,7 +30,7 @@ export const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-app-surface-hover rounded-lg transition-colors text-app-text-muted hover:text-app-text"
+                        className={`p-2 ${TOOL_ICON_BUTTON}`}
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -47,7 +48,7 @@ export const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = ({
                 <div className="p-4 border-t border-app-border bg-app-surface flex justify-end gap-3 sticky bottom-0 z-10">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-app-primary text-white hover:bg-app-primary-hover rounded-lg font-medium transition-colors"
+                        className={TOOL_BUTTON_PRIMARY}
                     >
                         Done
                     </button>

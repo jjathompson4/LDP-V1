@@ -1,6 +1,12 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react';
 import type { Fixture, SelectedCell } from '../types';
 import { X } from 'lucide-react';
+import {
+    TOOL_BUTTON_PRIMARY,
+    TOOL_ICON_BUTTON,
+    TOOL_INPUT
+} from '../../../styles/toolStyleTokens';
 
 interface BulkEditToolbarProps {
     selectedCells: SelectedCell[];
@@ -70,7 +76,7 @@ export const BulkEditToolbar: React.FC<BulkEditToolbarProps> = ({ selectedCells,
     return (
         <div
             ref={toolbarRef}
-            className="absolute z-20 bg-app-surface p-2 rounded-lg shadow-2xl border border-app-border flex items-center gap-2"
+            className="absolute z-20 bg-app-surface p-2 rounded-2xl border border-app-primary/30 flex items-center gap-2"
             style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
             <input
@@ -80,17 +86,17 @@ export const BulkEditToolbar: React.FC<BulkEditToolbarProps> = ({ selectedCells,
                 onKeyDown={handleKeyDown}
                 autoFocus
                 placeholder="Enter bulk value..."
-                className="bg-app-bg border border-app-border rounded-md px-3 py-1.5 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
+                className={`${TOOL_INPUT} py-1.5`}
             />
             <button
                 onClick={handleApply}
-                className="bg-app-primary text-white font-semibold py-1.5 px-4 rounded-md hover:bg-app-primary-hover transition-colors"
+                className={`${TOOL_BUTTON_PRIMARY} py-1.5`}
             >
                 Apply
             </button>
             <button
                 onClick={onClear}
-                className="p-1.5 rounded-full text-app-text-muted hover:text-app-text hover:bg-app-surface-hover transition-colors"
+                className={`p-1.5 ${TOOL_ICON_BUTTON}`}
                 title="Cancel (Esc)"
             >
                 <X className="w-4 h-4" />

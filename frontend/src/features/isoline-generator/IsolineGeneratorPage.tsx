@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { CircleDotDashed } from 'lucide-react';
-import InputPanel from './components/InputPanel';
+import InputPanel, { type InputPanelHandle } from './components/InputPanel';
 import PreviewPanel from './components/PreviewPanel';
 import InstructionsPanel from './components/InstructionsPanel';
 import ExportPanel from './components/ExportPanel';
 import { isolineService } from '../../services/isolineService';
 import type { ComputeRequest, ComputeResponse, ExportOptions } from '../../services/isolineService';
+import type { AxiosError } from 'axios';
+import { useToast } from '../../components/ui/ToastContext';
+import { PAGE_LAYOUT } from '../../layouts/pageLayoutTokens';
+import { TOOL_PAGE_TITLE } from '../../styles/toolStyleTokens';
 
 
 const IsolineGeneratorPage: React.FC = () => {
-    const inputPanelRef = React.useRef<any>(null); // Ideally import InputPanelHandle but this works
+    const { showToast } = useToast();
+    const inputPanelRef = React.useRef<InputPanelHandle | null>(null);
     const [file, setFile] = React.useState<File | null>(null);
     const [computeData, setComputeData] = useState<ComputeResponse | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -82,9 +87,10 @@ const IsolineGeneratorPage: React.FC = () => {
             // For now, keep simple.
             if (data.units === 'm' && scaleBarLength === 50) setScaleBarLength(15);
             if (data.units === 'ft' && scaleBarLength === 15) setScaleBarLength(50);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            const errorMsg = err.response?.data?.detail || err.message || 'An error occurred during generation.';
+            const maybeAxiosError = err as AxiosError<{ detail?: string }>;
+            const errorMsg = maybeAxiosError.response?.data?.detail || (err instanceof Error ? err.message : 'An error occurred during generation.');
             setError(errorMsg);
         } finally {
             setIsGenerating(false);
@@ -109,7 +115,7 @@ const IsolineGeneratorPage: React.FC = () => {
             await isolineService.exportPdf(computeData, finalOptions);
         } catch (err) {
             console.error(err);
-            alert('Failed to export PDF.');
+            showToast('Failed to export PDF.', 'error');
         } finally {
             setIsExporting(false);
         }
@@ -132,28 +138,28 @@ const IsolineGeneratorPage: React.FC = () => {
             await isolineService.exportPng(computeData, finalOptions);
         } catch (err) {
             console.error(err);
-            alert('Failed to export PNG.');
+            showToast('Failed to export PNG.', 'error');
         } finally {
             setIsExporting(false);
         }
     };
 
     return (
-        <div className="h-full flex flex-col bg-app-bg overflow-hidden">
-            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6">
+        <div className={PAGE_LAYOUT.root}>
+            <header className={PAGE_LAYOUT.header}>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                    <div className={PAGE_LAYOUT.headerIcon}>
                         <CircleDotDashed className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-app-text">Isoline Generator</h1>
+                        <h1 className={TOOL_PAGE_TITLE}>Isoline Generator</h1>
                     </div>
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden p-6 gap-6">
+            <div className={PAGE_LAYOUT.body}>
                 {/* Left Column: Input */}
-                <div className="w-80 flex-shrink-0 flex flex-col gap-4">
+                <aside className={PAGE_LAYOUT.sidebar}>
                     <InputPanel
                         ref={inputPanelRef}
                         file={file}
@@ -166,18 +172,18 @@ const IsolineGeneratorPage: React.FC = () => {
                         gridSize={gridSize}
                         setGridSize={setGridSize}
                     />
-                </div>
+                </aside>
 
                 {/* Right Column: Preview & Export */}
                 <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
                     {error && (
-                        <div className="bg-red-900/20 border border-red-900/50 text-red-200 px-4 py-3 rounded relative" role="alert">
+                        <div className="bg-red-900/20 border border-red-900/50 text-red-200 px-4 py-3 rounded-xl relative" role="alert">
                             <strong className="font-bold">Error: </strong>
                             <span className="block sm:inline">{error}</span>
                         </div>
                     )}
 
-                    <div className="h-[680px] flex-shrink-0">
+                    <div className="h-[740px] flex-shrink-0">
                         <PreviewPanel
                             data={computeData}
                             isLoading={isGenerating}

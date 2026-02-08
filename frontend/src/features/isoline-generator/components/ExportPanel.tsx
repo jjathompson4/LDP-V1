@@ -1,6 +1,12 @@
 import React from 'react';
 import { RotateCw } from 'lucide-react';
 import type { ComputeResponse, ExportOptions } from '../../../services/isolineService';
+import {
+    TOOL_BUTTON_PRIMARY,
+    TOOL_BUTTON_SECONDARY,
+    TOOL_CARD_PADDED,
+    TOOL_CARD_TITLE
+} from '../../../styles/toolStyleTokens';
 
 interface ExportPanelProps {
     data: ComputeResponse | null;
@@ -68,14 +74,14 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
     };
 
     return (
-        <div className="bg-app-surface p-4 rounded-lg shadow-sm border border-app-border flex flex-col gap-4">
-            <h3 className="text-md font-semibold text-app-text border-b border-app-border pb-2">Export Isolines</h3>
+        <div className={`${TOOL_CARD_PADDED} flex flex-col gap-4`}>
+            <h3 className={`${TOOL_CARD_TITLE} border-b border-app-border pb-2`}>Export Isolines</h3>
 
             {/* Generate Button */}
             <button
                 onClick={onGenerate}
                 disabled={isGenerating || !isFileSelected}
-                className="w-full py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                className={`w-full ${TOOL_BUTTON_PRIMARY}`}
             >
                 {isGenerating ? 'Previewing...' : 'Preview Isolines'}
             </button>
@@ -85,7 +91,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 <button
                     onClick={() => onRotate('x')}
                     disabled={isGenerating || !isFileSelected}
-                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    className={`flex-1 py-1.5 ${TOOL_BUTTON_SECONDARY}`}
                     title="Rotate Tilt (X-Axis)"
                 >
                     <RotateCw className="w-3 h-3" />
@@ -94,7 +100,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 <button
                     onClick={() => onRotate('y')}
                     disabled={isGenerating || !isFileSelected}
-                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    className={`flex-1 py-1.5 ${TOOL_BUTTON_SECONDARY}`}
                     title="Rotate Roll (Y-Axis)"
                 >
                     <RotateCw className="w-3 h-3" />
@@ -103,7 +109,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 <button
                     onClick={() => onRotate('z')}
                     disabled={isGenerating || !isFileSelected}
-                    className="flex-1 py-1.5 bg-app-surface hover:bg-app-surface-hover text-app-text border border-app-border rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                    className={`flex-1 py-1.5 ${TOOL_BUTTON_SECONDARY}`}
                     title="Rotate Orientation (Z-Axis)"
                 >
                     <RotateCw className="w-3 h-3" />
@@ -116,14 +122,14 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 <button
                     onClick={handlePdf}
                     disabled={!data || isExporting}
-                    className="flex-1 py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                    className={`flex-1 ${TOOL_BUTTON_PRIMARY}`}
                 >
                     {isExporting ? 'Exporting...' : 'Export PDF'}
                 </button>
                 <button
                     onClick={handlePng}
                     disabled={!data || isExporting}
-                    className="flex-1 py-2 bg-app-primary hover:bg-app-primary-hover text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                    className={`flex-1 ${TOOL_BUTTON_PRIMARY}`}
                 >
                     {isExporting ? 'Exporting...' : 'Export PNG'}
                 </button>
