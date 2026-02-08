@@ -16,11 +16,19 @@ import { useColumnSizing } from './hooks/useColumnSizing';
 // Components
 import { ScheduleUploadPane } from './components/ScheduleUploadPane';
 import { ColumnSettingsModal } from './components/ColumnSettingsModal';
+import { PAGE_LAYOUT } from '../../layouts/pageLayoutTokens';
+import {
+    TOOL_BUTTON_PRIMARY,
+    TOOL_BUTTON_SECONDARY,
+    TOOL_CARD_PADDED,
+    TOOL_PAGE_TITLE,
+    TOOL_SECTION_LABEL
+} from '../../styles/toolStyleTokens';
 
 const ScheduleBuilderPage: React.FC = () => {
     // UI Visibility State
     const [isUploadVisible, setIsUploadVisible] = useState(true);
-    const [isLogVisible, setIsLogVisible] = useState<boolean>(false);
+    const [isLogVisible, setIsLogVisible] = useState<boolean>(true);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
 
     // Shared AI Config
@@ -69,13 +77,6 @@ const ScheduleBuilderPage: React.FC = () => {
     // Content Resizing Logic 
     const uploadModuleRef = useRef<HTMLDivElement>(null);
 
-    // Initial Auth Check
-    useEffect(() => {
-        if (!geminiApiKey) {
-            setIsApiKeyModalVisible(true);
-        }
-    }, [geminiApiKey]);
-
     // Save columns
     useEffect(() => {
         try {
@@ -86,8 +87,8 @@ const ScheduleBuilderPage: React.FC = () => {
     }, [columns]);
 
     return (
-        <div className="h-full flex flex-col bg-app-bg overflow-hidden">
-            <GeminiKeyModal isVisible={isApiKeyModalVisible} onClose={() => setIsApiKeyModalVisible(false)} />
+        <div className={PAGE_LAYOUT.root}>
+            <GeminiKeyModal isVisible={isApiKeyModalVisible || !geminiApiKey} onClose={() => setIsApiKeyModalVisible(false)} />
             <ColumnSettingsModal
                 isOpen={isSettingsModalOpen}
                 onClose={() => setIsSettingsModalOpen(false)}
@@ -102,20 +103,20 @@ const ScheduleBuilderPage: React.FC = () => {
             </div>
 
             {/* Standardized Header */}
-            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6 flex-shrink-0">
+            <header className={PAGE_LAYOUT.header}>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                    <div className={PAGE_LAYOUT.headerIcon}>
                         <Table2 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-app-text">Lighting Schedule Builder</h1>
+                        <h1 className={TOOL_PAGE_TITLE}>Lighting Schedule Builder</h1>
                     </div>
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden p-6 gap-6">
+            <div className={PAGE_LAYOUT.body}>
                 {/* Left Sidebar: Controls & Uploads */}
-                <aside className="w-80 flex-shrink-0 flex flex-col gap-4 overflow-y-auto">
+                <aside className={PAGE_LAYOUT.sidebar}>
                     <div ref={uploadModuleRef}>
                         <ScheduleUploadPane
                             isExpanded={isUploadVisible}
@@ -132,19 +133,19 @@ const ScheduleBuilderPage: React.FC = () => {
                         toggleVisibility={() => setIsLogVisible(prev => !prev)}
                     />
 
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4 space-y-3">
-                        <h3 className="text-sm font-semibold text-app-text">Actions</h3>
+                    <div className={`${TOOL_CARD_PADDED} space-y-3`}>
+                        <h3 className={TOOL_SECTION_LABEL}>Actions</h3>
                         <button
                             onClick={sortFixtures}
                             disabled={isProcessing || fixtures.length === 0}
-                            className="w-full flex items-center justify-center gap-2 bg-app-surface-hover hover:bg-app-border border border-app-border text-app-text py-2.5 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                            className={`w-full ${TOOL_BUTTON_SECONDARY}`}
                         >
                             <ArrowDownAZ className="w-4 h-4" /> Sort A-Z
                         </button>
                         <button
                             onClick={() => exportToXLSX(fixtures, columns.filter(c => c.visible), 'Lighting-Equipment-Schedule', columnWidths, rowHeights)}
                             disabled={isProcessing || fixtures.length === 0}
-                            className="w-full flex items-center justify-center gap-2 bg-app-primary text-white hover:bg-app-primary-hover py-2.5 rounded-lg transition-colors text-sm font-bold shadow-md disabled:bg-app-surface-hover disabled:text-app-text-muted"
+                            className={`w-full ${TOOL_BUTTON_PRIMARY} disabled:bg-app-surface-hover disabled:text-app-text-muted`}
                         >
                             Export to Excel
                         </button>
@@ -152,7 +153,7 @@ const ScheduleBuilderPage: React.FC = () => {
                 </aside>
 
                 {/* Main Content: Table */}
-                <main className="flex-1 bg-app-bg border border-app-border rounded-2xl overflow-hidden relative flex flex-col">
+                <main className="flex-1 rounded-2xl overflow-hidden relative flex flex-col">
                     <div ref={contentContainerRef} className="flex-1 overflow-auto bg-app-surface/30 relative">
                         <ScheduleTable
                             fixtures={fixtures}

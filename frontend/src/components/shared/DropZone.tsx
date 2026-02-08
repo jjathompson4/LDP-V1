@@ -34,7 +34,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const validateFiles = (files: File[]): File[] => {
+    const validateFiles = useCallback((files: File[]): File[] => {
         setError(null);
         if (maxFiles && files.length > maxFiles) {
             setError(`Max ${maxFiles} files allowed.`);
@@ -68,7 +68,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
         }
 
         return validFiles;
-    };
+    }, [acceptedTypes, maxFiles]);
 
     const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -102,7 +102,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
             }
             e.dataTransfer.clearData();
         }
-    }, [disabled, isProcessing, onFilesSelected, acceptedTypes, maxFiles]);
+    }, [disabled, isProcessing, onFilesSelected, validateFiles]);
 
     const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -113,7 +113,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
             }
             e.target.value = '';
         }
-    }, [onFilesSelected, acceptedTypes, maxFiles]);
+    }, [onFilesSelected, validateFiles]);
 
     const handleClick = () => {
         if (!disabled && !isProcessing) {

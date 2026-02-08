@@ -74,12 +74,13 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
 
     useEffect(() => {
         window.addEventListener('resize', safeUpdateScale);
-        safeUpdateScale();
         // Add a few retries for initial layout
+        const t0 = setTimeout(safeUpdateScale, 0);
         const t1 = setTimeout(safeUpdateScale, 100);
         const t2 = setTimeout(safeUpdateScale, 500);
         return () => {
             window.removeEventListener('resize', safeUpdateScale);
+            clearTimeout(t0);
             clearTimeout(t1);
             clearTimeout(t2);
         };

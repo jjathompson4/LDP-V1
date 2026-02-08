@@ -9,32 +9,32 @@ export const AnalysisResult: React.FC<AnalysisResultProps> = ({ result }) => {
     return (
         <div className="space-y-6 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-app-surface-hover p-4 rounded-xl border border-app-border">
+                <div className="bg-app-surface-hover p-4 rounded-2xl border border-app-border">
                     <h3 className="text-lg font-semibold text-app-text mb-3">Original Image (Tone Mapped)</h3>
-                    <div className="aspect-video bg-app-bg rounded-lg overflow-hidden flex items-center justify-center">
+                    <div className="aspect-video bg-app-bg rounded-xl overflow-hidden flex items-center justify-center">
                         <img src={`data:image/png;base64,${result.original_image}`} alt="Original" className="max-w-full max-h-full object-contain" />
                     </div>
                 </div>
-                <div className="bg-app-surface-hover p-4 rounded-xl border border-app-border">
+                <div className="bg-app-surface-hover p-4 rounded-2xl border border-app-border">
                     <h3 className="text-lg font-semibold text-app-text mb-3">False Color Analysis</h3>
-                    <div className="aspect-video bg-app-bg rounded-lg overflow-hidden flex items-center justify-center">
+                    <div className="aspect-video bg-app-bg rounded-xl overflow-hidden flex items-center justify-center">
                         <img src={`data:image/png;base64,${result.false_color_image}`} alt="False Color" className="max-w-full max-h-full object-contain" />
                     </div>
                 </div>
             </div>
 
-            <div className="bg-app-surface-hover p-6 rounded-xl border border-app-border">
+            <div className="bg-app-surface-hover p-6 rounded-2xl border border-app-border">
                 <h3 className="text-lg font-semibold text-app-text mb-4">Luminance Statistics (cd/m²)</h3>
                 <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-app-surface p-4 rounded-lg text-center">
+                    <div className="bg-app-surface p-4 rounded-xl text-center">
                         <p className="text-app-text-muted text-sm mb-1">Minimum</p>
                         <p className="text-2xl font-bold text-app-text">{result.stats.min.toFixed(2)}</p>
                     </div>
-                    <div className="bg-app-surface p-4 rounded-lg text-center">
+                    <div className="bg-app-surface p-4 rounded-xl text-center">
                         <p className="text-app-text-muted text-sm mb-1">Maximum</p>
                         <p className="text-2xl font-bold text-app-text">{result.stats.max.toFixed(2)}</p>
                     </div>
-                    <div className="bg-app-surface p-4 rounded-lg text-center">
+                    <div className="bg-app-surface p-4 rounded-xl text-center">
                         <p className="text-app-text-muted text-sm mb-1">Average</p>
                         <p className="text-2xl font-bold text-app-text">{result.stats.avg.toFixed(2)}</p>
                     </div>

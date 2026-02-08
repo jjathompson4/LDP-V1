@@ -87,7 +87,7 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ events, onAdd, i
 
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-app-surface rounded-lg shadow-xl border border-app-border w-full max-w-md overflow-hidden">
+                    <div className="bg-app-surface rounded-lg border border-app-primary/30 w-full max-w-md overflow-hidden">
                         <div className="p-4 border-b border-app-border flex justify-between items-center">
                             <h3 className="font-bold text-app-text">Add New Event</h3>
                             <button onClick={onClose} className="text-app-text-muted hover:text-app-text">

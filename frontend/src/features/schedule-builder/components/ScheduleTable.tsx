@@ -3,6 +3,12 @@ import { createPortal } from 'react-dom';
 import type { Fixture, ColumnConfig, SelectedCell } from '../types';
 import { RefreshCw, Trash2, ChevronDown, Table2, Settings, Maximize2, Minimize2 } from 'lucide-react';
 import { BulkEditToolbar } from './BulkEditToolbar';
+import {
+    TOOL_BUTTON_GHOST,
+    TOOL_BUTTON_PRIMARY,
+    TOOL_CANVAS_SURFACE,
+    TOOL_ICON_BUTTON
+} from '../../../styles/toolStyleTokens';
 
 interface ScheduleTableProps {
     fixtures: Fixture[];
@@ -18,6 +24,24 @@ interface ScheduleTableProps {
     onOpenSettings: () => void;
 }
 
+const COMPACT_HEADER_LABELS: Record<string, string> = {
+    designation: 'Tag',
+    description: 'Desc',
+    manufacturer: 'Mfr',
+    series: 'Series',
+    lampType: 'Source',
+    voltage: 'Volt',
+    wattage: 'Watts',
+    wattPerFoot: 'W/ft',
+    deliveredLumens: 'Lumens',
+    cct: 'CCT',
+    cri: 'CRI',
+    mounting: 'Mount',
+    finish: 'Finish',
+    driverInfo: 'Driver',
+    notes: 'Notes',
+};
+
 const EditableCell: React.FC<{ value: string; onUpdate: (value: string) => void }> = ({ value, onUpdate }) => {
     const isPlaceholder = !value || value.toLowerCase() === 'null' || value.toLowerCase() === 'n/a' || value.toLowerCase() === 'not specified' || value === '--';
     const displayValue = isPlaceholder ? '' : value;
@@ -27,7 +51,7 @@ const EditableCell: React.FC<{ value: string; onUpdate: (value: string) => void 
             value={displayValue}
             placeholder="--"
             onChange={(e) => onUpdate(e.target.value)}
-            className="absolute inset-0 w-full h-full bg-transparent p-2 border-none focus:ring-1 focus:ring-cyan-500 focus:bg-slate-700 rounded-md transition resize-none placeholder-slate-400"
+            className="absolute inset-0 w-full h-full bg-transparent p-2 border-none focus:outline-none focus:ring-1 focus:ring-app-primary focus:bg-app-surface/60 rounded-xl transition resize-none placeholder-app-text-muted"
         />
     );
 };
@@ -109,19 +133,19 @@ const EditableDropdownCell: React.FC<{
                 value={displayValue}
                 placeholder="--"
                 onChange={handleInputChange}
-                className="w-full h-full bg-transparent p-2 pr-7 border-none focus:ring-1 focus:ring-cyan-500 focus:bg-slate-700 rounded-md transition resize-none placeholder-slate-400"
+                className="w-full h-full bg-transparent p-2 pr-7 border-none focus:outline-none focus:ring-1 focus:ring-app-primary focus:bg-app-surface/60 rounded-xl transition resize-none placeholder-app-text-muted"
             />
             {options.length > 0 && (
                 <button
                     onClick={() => setIsOpen(prev => !prev)}
-                    className="absolute top-2 right-1 p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700/50"
+                    className={`absolute top-1.5 right-1 p-1 ${TOOL_ICON_BUTTON}`}
                     aria-label="Toggle options"
                 >
                     <ChevronDown className="w-4 h-4" />
                 </button>
             )}
             {isOpen && (
-                <ul className="absolute z-50 w-44 bg-app-surface border border-app-border rounded-md shadow-lg max-h-60 overflow-y-auto top-8 right-1">
+                <ul className="absolute z-50 w-44 bg-app-surface border border-app-primary/30 rounded-xl max-h-60 overflow-y-auto top-8 right-1">
                     {options.map((option, index) => (
                         <li
                             key={index}
@@ -333,11 +357,13 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
         setIsMaximized(prev => !prev);
     };
 
+    const getCompactHeaderLabel = (key: string, label: string) => COMPACT_HEADER_LABELS[key] ?? label;
+
     const content = (
         <div
             ref={tableContainerRef}
             className={`
-                flex flex-col bg-app-surface shadow-lg border border-app-border overflow-hidden transition-all duration-300
+                flex flex-col ${TOOL_CANVAS_SURFACE} overflow-hidden transition-all duration-300
                 ${isMaximized
                     ? 'fixed inset-0 z-[9999] m-0 rounded-none w-screen h-screen'
                     : 'relative w-full h-full rounded-2xl'
@@ -349,14 +375,14 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <div className="flex items-center gap-3">
                     <Table2 className="w-5 h-5 text-app-primary" />
                     <h3 className="font-semibold text-app-text">Lighting Schedule</h3>
-                    <span className="bg-app-surface-hover px-2 py-0.5 rounded-full text-xs font-medium text-app-text-muted border border-app-border">
+                    <span className="bg-app-surface-hover px-2 py-0.5 rounded-xl text-xs font-medium text-app-text-muted border border-app-border">
                         {fixtures.length} fixtures
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onOpenSettings}
-                        className="p-2 text-app-text-muted hover:text-app-text hover:bg-app-surface-hover rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                        className={`p-2 ${TOOL_BUTTON_GHOST}`}
                         title="Configure Columns"
                     >
                         <Settings className="w-4 h-4" />
@@ -366,10 +392,10 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     <button
                         onClick={toggleMaximize}
                         className={`
-                            p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium
+                            p-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-medium
                             ${isMaximized
-                                ? 'bg-app-primary text-white hover:bg-app-primary-hover shadow-md'
-                                : 'text-app-text-muted hover:text-app-text hover:bg-app-surface-hover'
+                                ? TOOL_BUTTON_PRIMARY
+                                : TOOL_BUTTON_GHOST
                             }
                         `}
                         title={isMaximized ? "Exit Focus Mode" : "Maximize (Focus Mode)"}
@@ -412,12 +438,14 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         ))}
                         <col style={{ width: columnWidths['actions'] ? `${columnWidths['actions']}px` : undefined }} />
                     </colgroup>
-                    <thead className="text-xs text-app-text uppercase bg-app-surface-hover">
+                    <thead className="text-[11px] text-app-text bg-app-surface-hover">
                         <tr>
                             {columns.map(header => (
                                 <th key={header.key} scope="col" data-key={header.key} className="relative px-4 py-3 border-r border-app-border">
                                     <div className="flex items-center">
-                                        <span>{header.label}</span>
+                                        <span className="font-semibold tracking-normal truncate" title={header.label}>
+                                            {getCompactHeaderLabel(String(header.key), header.label)}
+                                        </span>
                                         <div
                                             onMouseDown={(e) => handleMouseDown(e, String(header.key))}
                                             title={`Resize ${header.label} column`}
@@ -500,14 +528,14 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                             <div className="flex items-center justify-end w-full gap-1">
                                                 <button
                                                     onClick={() => handleReanalyzeClick(fixture.id)}
-                                                    className="p-1.5 rounded-md text-app-text-muted hover:text-app-primary hover:bg-app-surface-hover transition-colors"
+                                                    className={`p-1.5 ${TOOL_ICON_BUTTON} hover:text-app-primary`}
                                                     title="Re-analyze with a new PDF"
                                                 >
                                                     <RefreshCw className="w-5 h-5" />
                                                 </button>
                                                 <button
                                                     onClick={() => deleteFixture(fixture.id)}
-                                                    className="p-1.5 rounded-md text-app-text-muted hover:text-app-error hover:bg-app-surface-hover transition-colors"
+                                                    className={`p-1.5 ${TOOL_ICON_BUTTON} hover:text-app-error`}
                                                     title="Delete Fixture"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
@@ -527,7 +555,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         ) : (
                             <tr>
                                 <td colSpan={columns.length + 1} className="p-4 border-b border-app-border">
-                                    <div className="text-center py-12 px-6 bg-app-surface-hover rounded-lg border-2 border-dashed border-app-border">
+                                    <div className="text-center py-12 px-6 bg-app-surface-hover rounded-xl border-2 border-dashed border-app-border">
                                         <Table2 className="w-12 h-12 mx-auto text-app-text-muted" />
                                         <div className="mt-4 flex flex-col items-center gap-3">
                                             <div className="text-center">

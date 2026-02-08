@@ -13,7 +13,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ title, childre
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <div className="bg-app-surface rounded-lg shadow-lg border border-app-border flex flex-col transition-all duration-200">
+        <div className="bg-app-surface rounded-lg border border-app-primary/30 flex flex-col transition-all duration-200">
             <div className="p-4 border-b border-app-border flex justify-between items-center select-none">
                 <div className="flex items-center gap-2 flex-1">
                     <button
@@ -43,7 +43,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ title, childre
                                         className="fixed inset-0 z-10"
                                         onClick={() => setIsMenuOpen(false)}
                                     />
-                                    <div className="absolute right-0 mt-2 w-32 bg-app-surface border border-app-border rounded shadow-xl z-20 py-1">
+                                    <div className="absolute right-0 mt-2 w-32 bg-app-surface border border-app-primary/30 rounded z-20 py-1">
                                         <div className="px-3 py-1 text-xs text-app-text-muted font-bold uppercase tracking-wider">Move</div>
                                         <button
                                             onClick={() => { onMove('up'); setIsMenuOpen(false); }}

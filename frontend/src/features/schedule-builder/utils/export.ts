@@ -100,7 +100,7 @@ export const exportToXLSX = (
     });
 };
 
-const submitForm = (url: string, data: any) => {
+const submitForm = (url: string, data: Record<string, string>) => {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = url;

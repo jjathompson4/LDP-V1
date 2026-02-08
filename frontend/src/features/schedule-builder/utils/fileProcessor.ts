@@ -1,6 +1,24 @@
 // This script relies on the pdf.js library being available in the global scope,
 // which is loaded via CDN in index.html.
-declare const pdfjsLib: any;
+interface PdfJsViewport {
+    width: number;
+    height: number;
+}
+
+interface PdfJsPage {
+    getViewport: (params: { scale: number }) => PdfJsViewport;
+    render: (params: { canvasContext: CanvasRenderingContext2D; viewport: PdfJsViewport }) => { promise: Promise<void> };
+}
+
+interface PdfJsDocument {
+    getPage: (pageNumber: number) => Promise<PdfJsPage>;
+}
+
+interface PdfJsLib {
+    getDocument: (params: { data: Uint8Array }) => { promise: Promise<PdfJsDocument> };
+}
+
+declare const pdfjsLib: PdfJsLib | undefined;
 
 /**
  * Converts the first page of a PDF file to a base64 encoded PNG image string.

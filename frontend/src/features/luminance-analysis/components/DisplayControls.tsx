@@ -1,5 +1,6 @@
 import React from 'react';
 import { Monitor } from 'lucide-react';
+import { TOOL_CARD_PADDED } from '../../../styles/toolStyleTokens';
 
 interface DisplayControlsProps {
     exposure: number;
@@ -21,7 +22,7 @@ export const DisplayControls: React.FC<DisplayControlsProps> = ({
     onSrgbChange,
 }) => {
     return (
-        <div className="bg-app-surface rounded-xl border border-app-border p-4 space-y-4">
+        <div className={`${TOOL_CARD_PADDED} space-y-4`}>
             <div className="flex items-center gap-2 text-app-text font-semibold border-b border-app-border pb-2">
                 <Monitor className="w-4 h-4 text-app-primary" />
                 <h3>Display Controls</h3>

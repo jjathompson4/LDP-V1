@@ -7,6 +7,20 @@ import { InteractiveCanvas } from './components/InteractiveCanvas';
 import { HistogramDialog } from './components/HistogramDialog';
 import * as api from './services/analysisService';
 import { useTheme } from '../../context/ThemeContext';
+import { Dialog } from '../../components/ui/Dialog';
+import { Button } from '../../components/ui/Button';
+import { useToast } from '../../components/ui/ToastContext';
+import { PAGE_LAYOUT } from '../../layouts/pageLayoutTokens';
+import {
+    TOOL_BUTTON_DANGER_GHOST,
+    TOOL_BUTTON_SECONDARY,
+    TOOL_CANVAS_SURFACE,
+    TOOL_CARD_TITLE,
+    TOOL_CARD_PADDED,
+    TOOL_INPUT,
+    TOOL_PAGE_TITLE,
+    TOOL_SECTION_LABEL
+} from '../../styles/toolStyleTokens';
 
 interface Rect {
     x0: number;
@@ -16,6 +30,7 @@ interface Rect {
 }
 
 const LuminanceAnalysisPage: React.FC = () => {
+    const { showToast } = useToast();
     // Theme
     const { theme } = useTheme();
 
@@ -51,6 +66,9 @@ const LuminanceAnalysisPage: React.FC = () => {
     // Error/Loading
     const [error, setError] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isCalibrateDialogOpen, setIsCalibrateDialogOpen] = useState(false);
+    const [calibrationInput, setCalibrationInput] = useState('');
+    const [calibrationTarget, setCalibrationTarget] = useState<{ x: number; y: number; value: number } | null>(null);
 
     const updateRender = useCallback(async (
         currentSessionId: string,
@@ -155,29 +173,39 @@ const LuminanceAnalysisPage: React.FC = () => {
         }
     }, [sessionId]);
 
-    const handleCalibrate = useCallback(async () => {
+    const handleCalibrate = useCallback(() => {
         if (!sessionId || pixelTags.length === 0) {
-            alert("Please select a pixel point first to calibrate.");
+            setError("Please select a pixel point first to calibrate.");
+            showToast('Select a pixel point before calibrating.', 'info');
             return;
         }
         const lastTag = pixelTags[pixelTags.length - 1];
-        const input = prompt(`Enter known luminance for point (${lastTag.x.toFixed(0)}, ${lastTag.y.toFixed(0)}) currently ${lastTag.value.toFixed(2)} cd/m²:`);
-        if (input) {
-            const known = parseFloat(input);
-            if (!isNaN(known) && known > 0) {
-                try {
-                    const res = await api.calibrateImage(sessionId, Math.round(lastTag.x), Math.round(lastTag.y), known);
-                    setStats(res.stats);
-                    setScaleFactor(res.scaleFactor);
-                    setPixelTags([]); // Clear annotations as they might be stale
-                    setRoiTags([]);
-                } catch (err) {
-                    console.error(err);
-                    setError("Calibration failed");
-                }
-            }
+        setCalibrationTarget({ x: lastTag.x, y: lastTag.y, value: lastTag.value });
+        setCalibrationInput('');
+        setIsCalibrateDialogOpen(true);
+    }, [sessionId, pixelTags, showToast]);
+
+    const handleConfirmCalibrate = useCallback(async () => {
+        if (!sessionId || !calibrationTarget) return;
+        const known = parseFloat(calibrationInput);
+        if (Number.isNaN(known) || known <= 0) {
+            setError('Please enter a valid positive luminance value.');
+            return;
         }
-    }, [sessionId, pixelTags]);
+        try {
+            const res = await api.calibrateImage(sessionId, Math.round(calibrationTarget.x), Math.round(calibrationTarget.y), known);
+            setStats(res.stats);
+            setScaleFactor(res.scaleFactor);
+            setPixelTags([]);
+            setRoiTags([]);
+            setIsCalibrateDialogOpen(false);
+            showToast('Calibration updated.', 'success');
+        } catch (err) {
+            console.error(err);
+            setError('Calibration failed');
+            showToast('Calibration failed.', 'error');
+        }
+    }, [sessionId, calibrationTarget, calibrationInput, showToast]);
 
     const handleClearAnnotations = useCallback(() => {
         setPixelTags([]);
@@ -197,24 +225,24 @@ const LuminanceAnalysisPage: React.FC = () => {
     }, [sessionId]);
 
     return (
-        <div className="h-full flex flex-col bg-app-bg overflow-hidden">
+        <div className={PAGE_LAYOUT.root}>
             {/* Standardized Header */}
-            <header className="bg-app-surface/80 backdrop-blur-sm border-b border-app-border p-6">
+            <header className={PAGE_LAYOUT.header}>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-app-primary rounded-lg flex items-center justify-center shadow-lg shadow-app-primary/20">
+                    <div className={PAGE_LAYOUT.headerIcon}>
                         <Sun className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-app-text">Luminance Analysis</h1>
+                        <h1 className={TOOL_PAGE_TITLE}>Luminance Analysis</h1>
                     </div>
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden p-6 gap-6">
+            <div className={PAGE_LAYOUT.body}>
                 {/* Left Column: Input & Controls */}
-                <aside className="w-80 flex-shrink-0 flex flex-col gap-4 overflow-y-auto">
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4">
-                        <h3 className="text-lg font-semibold text-app-text mb-4">Upload Image</h3>
+                <aside className={PAGE_LAYOUT.sidebar}>
+                    <div className={TOOL_CARD_PADDED}>
+                        <h3 className={`${TOOL_CARD_TITLE} mb-4`}>Upload Image</h3>
                         <DropZone
                             onFilesSelected={handleUpload}
                             isProcessing={isUploading}
@@ -227,38 +255,34 @@ const LuminanceAnalysisPage: React.FC = () => {
                         {error && <p className="text-app-error text-sm mt-2">{error}</p>}
                     </div>
 
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4">
-                        <DisplayControls
-                            exposure={exposure}
-                            gamma={gamma}
-                            useSrgb={useSrgb}
-                            disabled={!sessionId || falseColor}
-                            onExposureChange={setExposure}
-                            onGammaChange={setGamma}
-                            onSrgbChange={setUseSrgb}
-                        />
-                    </div>
+                    <DisplayControls
+                        exposure={exposure}
+                        gamma={gamma}
+                        useSrgb={useSrgb}
+                        disabled={!sessionId || falseColor}
+                        onExposureChange={setExposure}
+                        onGammaChange={setGamma}
+                        onSrgbChange={setUseSrgb}
+                    />
 
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4">
-                        <FalseColorControls
-                            enabled={falseColor}
-                            colormap={colormap}
-                            min={fcMin}
-                            max={fcMax}
-                            disabled={!sessionId}
-                            onToggle={setFalseColor}
-                            onColormapChange={setColormap}
-                            onMinChange={setFcMin}
-                            onMaxChange={setFcMax}
-                        />
-                    </div>
+                    <FalseColorControls
+                        enabled={falseColor}
+                        colormap={colormap}
+                        min={fcMin}
+                        max={fcMax}
+                        disabled={!sessionId}
+                        onToggle={setFalseColor}
+                        onColormapChange={setColormap}
+                        onMinChange={setFcMin}
+                        onMaxChange={setFcMax}
+                    />
 
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4 space-y-3">
-                        <h3 className="text-sm font-semibold text-app-text mb-2">Analysis Tools</h3>
+                    <div className={`${TOOL_CARD_PADDED} space-y-3`}>
+                        <h3 className={`${TOOL_SECTION_LABEL} mb-2`}>Analysis Tools</h3>
                         <button
                             onClick={handleCalibrate}
                             disabled={!sessionId}
-                            className="w-full flex items-center justify-center gap-2 bg-app-surface-hover hover:bg-app-border border border-app-border text-app-text py-2.5 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`w-full ${TOOL_BUTTON_SECONDARY}`}
                         >
                             <Crosshair className="w-4 h-4" /> Calibrate from Point
                         </button>
@@ -283,7 +307,7 @@ const LuminanceAnalysisPage: React.FC = () => {
                         <button
                             onClick={handleClearAnnotations}
                             disabled={(!sessionId) || (pixelTags.length === 0 && roiTags.length === 0)}
-                            className="w-full flex items-center justify-center gap-2 text-app-error hover:text-red-300 hover:bg-app-error/20 py-2 rounded-lg transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`w-full text-xs ${TOOL_BUTTON_DANGER_GHOST}`}
                         >
                             <Trash2 className="w-3 h-3" /> Clear Annotations
                         </button>
@@ -291,14 +315,14 @@ const LuminanceAnalysisPage: React.FC = () => {
                         <button
                             onClick={handleShowHistogram}
                             disabled={!sessionId}
-                            className="w-full flex items-center justify-center gap-2 bg-app-surface hover:bg-app-surface-hover border border-app-border text-app-text py-2.5 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`w-full ${TOOL_BUTTON_SECONDARY}`}
                         >
                             <BarChart2 className="w-4 h-4" /> View Histogram
                         </button>
                     </div>
 
-                    <div className="bg-app-surface rounded-2xl shadow-lg border border-app-border p-4 space-y-3">
-                        <h3 className="text-lg font-semibold text-app-text">Image Info</h3>
+                    <div className={`${TOOL_CARD_PADDED} space-y-3`}>
+                        <h3 className={TOOL_CARD_TITLE}>Image Info</h3>
                         <div className="text-xs text-app-text-muted break-all grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
                             <span className="font-semibold text-app-text">File:</span> <span>{filename || '-'}</span>
                             <span className="font-semibold text-app-text">Res:</span> <span>{dimensions ? `${dimensions.width} x ${dimensions.height}` : '-'}</span>
@@ -310,7 +334,7 @@ const LuminanceAnalysisPage: React.FC = () => {
 
                 {/* Main Canvas Area */}
                 {/* Main Canvas Area - Compact View */}
-                <div className="flex-1 bg-app-surface/30 border border-app-border rounded-2xl relative flex items-center justify-center overflow-hidden p-4 max-h-[740px]">
+                <div className={`flex-1 ${TOOL_CANVAS_SURFACE} relative flex items-center justify-center overflow-hidden p-4 max-h-[740px]`}>
                     {currentImage && sessionId && dimensions ? (
                         <div className="relative w-full h-full flex flex-col">
                             {/* Canvas Wrapper */}
@@ -344,7 +368,7 @@ const LuminanceAnalysisPage: React.FC = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="text-center text-slate-600">
+                        <div className="text-center text-app-text-muted">
                             <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
                             <p className="text-lg">Upload an HDR image to begin analysis</p>
                         </div>
@@ -360,6 +384,45 @@ const LuminanceAnalysisPage: React.FC = () => {
                     counts={histogramData.counts}
                 />
             )}
+
+            <Dialog
+                isOpen={isCalibrateDialogOpen}
+                onClose={() => setIsCalibrateDialogOpen(false)}
+                title="Calibrate Luminance"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setIsCalibrateDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirmCalibrate}>
+                            Apply Calibration
+                        </Button>
+                    </>
+                }
+            >
+                <div className="space-y-3">
+                    {calibrationTarget && (
+                        <p className="text-sm text-app-text-muted">
+                            Point ({calibrationTarget.x.toFixed(0)}, {calibrationTarget.y.toFixed(0)}) currently reads {calibrationTarget.value.toFixed(2)} cd/m².
+                        </p>
+                    )}
+                    <div>
+                        <label htmlFor="known-luminance" className="block text-sm font-medium text-app-text mb-1">
+                            Known luminance (cd/m²)
+                        </label>
+                        <input
+                            id="known-luminance"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={calibrationInput}
+                            onChange={(e) => setCalibrationInput(e.target.value)}
+                            className={TOOL_INPUT}
+                            placeholder="e.g. 350"
+                        />
+                    </div>
+                </div>
+            </Dialog>
         </div>
     );
 };

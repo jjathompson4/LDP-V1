@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
 interface AiConfigContextType {
@@ -12,7 +13,7 @@ export const AiConfigProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(() => {
         try {
             return localStorage.getItem('geminiApiKey');
-        } catch (e) {
+        } catch {
             return null;
         }
     });
@@ -24,8 +25,8 @@ export const AiConfigProvider: React.FC<{ children: ReactNode }> = ({ children }
             } else {
                 localStorage.removeItem('geminiApiKey');
             }
-        } catch (e) {
-            console.error("Failed to save API key to localStorage", e);
+        } catch (error) {
+            console.error("Failed to save API key to localStorage", error);
         }
         setGeminiApiKeyState(key);
     };

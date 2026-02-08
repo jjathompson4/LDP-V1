@@ -1,5 +1,6 @@
 import React from 'react';
 import { Palette } from 'lucide-react';
+import { TOOL_CARD_PADDED, TOOL_INPUT, TOOL_SELECT } from '../../../styles/toolStyleTokens';
 
 interface FalseColorControlsProps {
     enabled: boolean;
@@ -25,7 +26,7 @@ export const FalseColorControls: React.FC<FalseColorControlsProps> = ({
     onMaxChange,
 }) => {
     return (
-        <div className="bg-app-surface rounded-xl border border-app-border p-4 space-y-4">
+        <div className={`${TOOL_CARD_PADDED} space-y-4`}>
             <div className="flex items-center justify-between border-b border-app-border pb-2">
                 <div className="flex items-center gap-2 text-app-text font-semibold">
                     <Palette className="w-4 h-4 text-app-accent" />
@@ -50,7 +51,7 @@ export const FalseColorControls: React.FC<FalseColorControlsProps> = ({
                         <select
                             value={colormap}
                             onChange={(e) => onColormapChange(e.target.value)}
-                            className="w-full bg-app-bg border border-app-border text-app-text text-sm rounded-lg focus:ring-app-accent focus:border-app-accent block p-2.5"
+                            className={TOOL_SELECT}
                         >
                             <option value="jet">Jet</option>
                             <option value="viridis">Viridis</option>
@@ -68,7 +69,7 @@ export const FalseColorControls: React.FC<FalseColorControlsProps> = ({
                                 type="number"
                                 value={min}
                                 onChange={(e) => onMinChange(parseFloat(e.target.value))}
-                                className="w-full bg-app-bg border border-app-border text-app-text text-sm rounded-lg focus:ring-app-accent focus:border-app-accent block p-2.5"
+                                className={TOOL_INPUT}
                             />
                         </div>
                         <div className="space-y-1">
@@ -77,7 +78,7 @@ export const FalseColorControls: React.FC<FalseColorControlsProps> = ({
                                 type="number"
                                 value={max}
                                 onChange={(e) => onMaxChange(parseFloat(e.target.value))}
-                                className="w-full bg-app-bg border border-app-border text-app-text text-sm rounded-lg focus:ring-app-accent focus:border-app-accent block p-2.5"
+                                className={TOOL_INPUT}
                             />
                         </div>
                     </div>

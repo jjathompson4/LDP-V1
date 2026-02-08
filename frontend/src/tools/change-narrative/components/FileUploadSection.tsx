@@ -1,5 +1,9 @@
 import React from 'react';
 import { Upload, FileText } from 'lucide-react';
+import {
+    TOOL_BUTTON_PRIMARY,
+    TOOL_INPUT
+} from '../../../styles/toolStyleTokens';
 
 /* --------------------------------------------------------------------------------
  * Helper Component: FileUpload
@@ -12,7 +16,7 @@ const FileUpload: React.FC<{
     return (
         <div className="flex flex-col gap-2">
             <span className="text-sm font-semibold text-app-text-muted">{label}</span>
-            <div className={`relative border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${file ? 'border-app-primary bg-app-primary/5' : 'border-app-border hover:border-app-text-muted hover:bg-app-surface-hover'}`}>
+            <div className={`relative border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition-colors ${file ? 'border-app-primary bg-app-primary/5' : 'border-app-border hover:border-app-text-muted hover:bg-app-surface-hover'}`}>
                 <input
                     type="file"
                     accept=".pdf"
@@ -67,7 +71,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
                 <div>
                     <label className="text-xs font-semibold text-app-text-muted">Project Name</label>
                     <input
-                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-sm mt-1"
+                        className={`${TOOL_INPUT} mt-1`}
                         value={project}
                         onChange={e => setProject(e.target.value)}
                         placeholder="Optional"
@@ -76,7 +80,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
                 <div>
                     <label className="text-xs font-semibold text-app-text-muted">Revision Label *</label>
                     <input
-                        className="w-full bg-app-bg border border-app-border rounded px-3 py-2 text-sm mt-1"
+                        className={`${TOOL_INPUT} mt-1`}
                         value={revision}
                         onChange={e => setRevision(e.target.value)}
                         placeholder="e.g. Addendum 04"
@@ -92,7 +96,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
             <button
                 onClick={onCompare}
                 disabled={!prevPdf || !currPdf || !revision || isComparing}
-                className={`w-full py-3 rounded-lg font-bold shadow-md transition-all ${!prevPdf || !currPdf || !revision || isComparing
+                className={`w-full ${TOOL_BUTTON_PRIMARY} ${!prevPdf || !currPdf || !revision || isComparing
                     ? 'bg-app-surface-hover text-app-text-muted cursor-not-allowed'
                     : 'bg-app-primary text-white hover:bg-app-primary-hover'
                     }`}

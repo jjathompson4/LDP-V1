@@ -9,7 +9,7 @@ interface ProjectHeaderProps {
 
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project, projects, onProjectChange }) => {
     return (
-        <div className="bg-app-surface rounded-lg p-6 shadow-lg border border-app-border mb-6">
+        <div className="bg-app-surface rounded-lg p-6 border border-app-primary/30 mb-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-2">

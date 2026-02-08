@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import type { ColumnConfig } from '../types';
 import { Plus, Trash2, RefreshCw, GripVertical, Eye, EyeOff } from 'lucide-react';
 import { DEFAULT_COLUMNS } from '../utils/columns';
+import {
+    TOOL_BUTTON_SECONDARY,
+    TOOL_ICON_BUTTON,
+    TOOL_INPUT,
+    TOOL_TEXTAREA
+} from '../../../styles/toolStyleTokens';
 
 interface ExtractionSettingsProps {
     columns: ColumnConfig[];
@@ -11,7 +17,7 @@ interface ExtractionSettingsProps {
 export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns, setColumns }) => {
     const [draggedItem, setDraggedItem] = useState<ColumnConfig | null>(null);
 
-    const handleColumnChange = (key: string, field: keyof ColumnConfig, value: any) => {
+    const handleColumnChange = (key: string, field: keyof ColumnConfig, value: string | boolean) => {
         setColumns(prev => prev.map(c => c.key === key ? { ...c, [field]: value } : c));
     };
 
@@ -71,7 +77,7 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
                 {columns.map(col => (
                     <div
                         key={String(col.key)}
-                        className="bg-app-surface-hover p-4 rounded-lg flex flex-col md:flex-row gap-4 md:items-start"
+                        className="bg-app-surface-hover p-4 rounded-2xl flex flex-col md:flex-row gap-4 md:items-start"
                         draggable
                         onDragStart={(e) => onDragStart(e, col)}
                         onDragOver={onDragOver}
@@ -89,7 +95,7 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
                                     type="text"
                                     value={col.label}
                                     onChange={(e) => handleColumnChange(String(col.key), 'label', e.target.value)}
-                                    className="w-full bg-app-bg border border-app-border rounded-md px-3 py-2 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
+                                    className={TOOL_INPUT}
                                 />
                             </div>
                             <div>
@@ -98,20 +104,20 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
                                     value={col.description}
                                     onChange={(e) => handleColumnChange(String(col.key), 'description', e.target.value)}
                                     rows={3}
-                                    className="w-full bg-app-bg border border-app-border rounded-md px-3 py-2 text-app-text focus:ring-2 focus:ring-app-primary focus:border-app-primary"
+                                    className={TOOL_TEXTAREA}
                                 />
                             </div>
                         </div>
                         <div className="flex-shrink-0 flex flex-row-reverse md:flex-col items-center gap-2 pt-2">
-                            <button onClick={() => handleColumnChange(String(col.key), 'visible', !col.visible)} className="p-2 rounded-full text-app-text-muted hover:text-app-text hover:bg-app-surface" title={col.visible ? 'Hide Column' : 'Show Column'}>
+                            <button onClick={() => handleColumnChange(String(col.key), 'visible', !col.visible)} className={`p-2 ${TOOL_ICON_BUTTON}`} title={col.visible ? 'Hide Column' : 'Show Column'}>
                                 {col.visible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                             </button>
                             {col.isDefault ? (
-                                <button onClick={() => handleResetColumn(String(col.key))} className="p-2 rounded-full text-app-text-muted hover:text-app-primary hover:bg-app-surface" title="Reset to default instructions">
+                                <button onClick={() => handleResetColumn(String(col.key))} className={`p-2 ${TOOL_ICON_BUTTON} hover:text-app-primary`} title="Reset to default instructions">
                                     <RefreshCw className="w-5 h-5" />
                                 </button>
                             ) : (
-                                <button onClick={() => handleRemoveColumn(String(col.key))} className="p-2 rounded-full text-app-text-muted hover:text-app-error hover:bg-app-surface" title="Delete custom column">
+                                <button onClick={() => handleRemoveColumn(String(col.key))} className={`p-2 ${TOOL_ICON_BUTTON} hover:text-app-error`} title="Delete custom column">
                                     <Trash2 className="w-5 h-5" />
                                 </button>
                             )}
@@ -122,7 +128,7 @@ export const ExtractionSettings: React.FC<ExtractionSettingsProps> = ({ columns,
             <div className="mt-6">
                 <button
                     onClick={handleAddColumn}
-                    className="w-full flex items-center justify-center gap-2 bg-app-surface-hover text-app-primary font-semibold py-2 px-4 rounded-lg hover:bg-app-border transition-colors focus:outline-none focus:ring-2 focus:ring-app-primary focus:ring-offset-2 focus:ring-offset-app-surface"
+                    className={`w-full ${TOOL_BUTTON_SECONDARY}`}
                 >
                     <Plus className="w-5 h-5" />
                     Add Custom Column

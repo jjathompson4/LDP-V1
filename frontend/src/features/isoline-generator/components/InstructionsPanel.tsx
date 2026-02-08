@@ -1,9 +1,10 @@
 import React from 'react';
+import { TOOL_CARD_TITLE, TOOL_SECTION_LABEL } from '../../../styles/toolStyleTokens';
 
 const InstructionsPanel: React.FC = () => {
     return (
-        <div className="bg-app-surface p-4 rounded-lg shadow-sm border border-app-border">
-            <h3 className="text-md font-semibold text-app-text mb-2">How to use with Bluebeam</h3>
+        <div className="bg-app-surface p-4 rounded-2xl border border-app-primary/30">
+            <h3 className={`${TOOL_CARD_TITLE} mb-2`}>How to use with Bluebeam</h3>
             <ol className="list-decimal list-inside text-sm text-app-text-muted space-y-1">
                 <li>Upload an IES file and configure settings.</li>
                 <li>Set isoline values and colors.</li>
@@ -15,7 +16,7 @@ const InstructionsPanel: React.FC = () => {
             </ol>
 
             <div className="mt-4 pt-3 border-t border-app-border">
-                <h4 className="text-xs font-semibold text-app-text-muted uppercase tracking-wider mb-1">Assumptions & Limitations</h4>
+                <h4 className={`${TOOL_SECTION_LABEL} mb-1`}>Assumptions & Limitations</h4>
                 <ul className="list-disc list-inside text-xs text-app-text-muted space-y-1">
                     <li>Single luminaire, direct-only calc.</li>
                     <li>Flat horizontal plane.</li>

@@ -2,11 +2,17 @@ import React from 'react';
 import type { SheetData } from '../types';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '../../../config';
+import {
+    TOOL_CANVAS_SURFACE,
+    TOOL_CARD,
+    TOOL_CHIP_INACTIVE,
+    TOOL_TEXTAREA
+} from '../../../styles/toolStyleTokens';
 
 interface SheetDetailViewProps {
     sheetId: string | null;
     sheets: SheetData[];
-    setSheets: (sheets: SheetData[]) => void;
+    setSheets: React.Dispatch<React.SetStateAction<SheetData[]>>;
     prevPdf: File | null;
     currPdf: File | null;
 }
@@ -48,25 +54,25 @@ export const SheetDetailView: React.FC<SheetDetailViewProps> = ({
                 const data = await res.json();
 
                 // Update the sheet in the parent state with the new previews
-                setSheets(sheets.map(s => s.sheetId === sheetId ? {
+                setSheets(prevSheets => prevSheets.map(s => s.sheetId === sheetId ? {
                     ...s,
                     previousPreviewBase64: data.previous,
                     currentPreviewBase64: data.current
                 } : s));
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(err);
-                setPreviewError(err.message);
+                setPreviewError(err instanceof Error ? err.message : 'Failed to load previews');
             } finally {
                 setIsLoadingPreviews(false);
             }
         };
 
         fetchPreviews();
-    }, [sheetId, prevPdf, currPdf]);
+    }, [sheetId, sheet, prevPdf, currPdf, setSheets]);
 
     if (!sheetId) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-app-text-muted">
+            <div className={`${TOOL_CANVAS_SURFACE} h-full flex flex-col items-center justify-center text-app-text-muted`}>
                 <ArrowRight className="w-12 h-12 mb-4 opacity-20" />
                 <p>Select a sheet to view details</p>
             </div>
@@ -94,7 +100,7 @@ export const SheetDetailView: React.FC<SheetDetailViewProps> = ({
                     <h3 className="text-xl text-app-text-muted">{displayedSheet.sheetTitle}</h3>
                 </div>
                 <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer bg-app-surface px-4 py-2 rounded-lg border border-app-border">
+                    <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 text-sm border border-app-border ${TOOL_CHIP_INACTIVE}`}>
                         <input
                             type="checkbox"
                             checked={!!displayedSheet.isIncluded}
@@ -107,10 +113,10 @@ export const SheetDetailView: React.FC<SheetDetailViewProps> = ({
             </div>
 
             {/* Narrative Editor */}
-            <div className="bg-app-surface rounded-xl border border-app-border p-6 shadow-sm">
+            <div className={`${TOOL_CARD} p-6`}>
                 <h4 className="text-sm font-bold text-app-text-muted uppercase mb-4">Detailed Narrative</h4>
                 <textarea
-                    className="w-full h-40 bg-app-bg border border-app-border rounded-lg p-4 text-sm leading-relaxed focus:ring-2 focus:ring-app-primary focus:border-transparent outline-none resize-y"
+                    className={`${TOOL_TEXTAREA} h-40 resize-y`}
                     value={displayedSheet.detailedNarrative || ''}
                     onChange={e => updateNarrative(e.target.value)}
                     placeholder="AI narrative will appear here. You can also edit manually."
@@ -121,7 +127,7 @@ export const SheetDetailView: React.FC<SheetDetailViewProps> = ({
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <span className="text-xs font-bold text-app-text-muted uppercase tracking-wider">Previous Issue</span>
-                    <div className="aspect-[3/4] bg-app-bg border border-app-border rounded-xl overflow-hidden relative group shadow-inner">
+                    <div className="aspect-[3/4] bg-app-bg border border-app-border rounded-2xl overflow-hidden relative group shadow-inner">
                         {isLoadingPreviews ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-app-surface/50 backdrop-blur-sm">
                                 <Loader2 className="w-8 h-8 text-app-primary animate-spin mb-2" />
@@ -138,7 +144,7 @@ export const SheetDetailView: React.FC<SheetDetailViewProps> = ({
                 </div>
                 <div className="space-y-2">
                     <span className="text-xs font-bold text-app-text-muted uppercase tracking-wider">Current Issue</span>
-                    <div className="aspect-[3/4] bg-app-bg border border-app-border rounded-xl overflow-hidden relative group shadow-inner">
+                    <div className="aspect-[3/4] bg-app-bg border border-app-border rounded-2xl overflow-hidden relative group shadow-inner">
                         {isLoadingPreviews ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-app-surface/50 backdrop-blur-sm">
                                 <Loader2 className="w-8 h-8 text-app-primary animate-spin mb-2" />

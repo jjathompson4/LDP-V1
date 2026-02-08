@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import type { ComputeResponse } from '../../../services/isolineService';
+import { TOOL_BUTTON_SECONDARY, TOOL_CANVAS_SURFACE } from '../../../styles/toolStyleTokens';
 
 interface PreviewPanelProps {
     data: ComputeResponse | null;
@@ -24,14 +25,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
     const lastMousePos = useRef({ x: 0, y: 0 });
-
-    // Reset transform when data changes
-    useEffect(() => {
-        if (data && containerRef.current) {
-            // Fit to view logic could go here
-            setTransform({ x: 0, y: 0, scale: 1 });
-        }
-    }, [data]);
 
     const handleWheel = (e: React.WheelEvent) => {
         e.preventDefault();
@@ -61,7 +54,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-full bg-app-surface border border-app-border rounded-lg">
+            <div className={`${TOOL_CANVAS_SURFACE} flex items-center justify-center h-full`}>
                 <div className="text-app-text-muted">Generating preview...</div>
             </div>
         );
@@ -69,7 +62,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     if (!data) {
         return (
-            <div className="flex items-center justify-center h-full bg-app-surface border border-app-border rounded-lg">
+            <div className={`${TOOL_CANVAS_SURFACE} flex items-center justify-center h-full`}>
                 <div className="text-app-text-muted text-center p-4">
                     Upload an IES file, adjust parameters, and click Preview Isolines.
                 </div>
@@ -132,7 +125,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
     return (
         <div
-            className="relative h-full bg-app-bg border border-app-border rounded-lg overflow-hidden cursor-move"
+            className={`${TOOL_CANVAS_SURFACE} relative h-full overflow-hidden cursor-move`}
             ref={containerRef}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
@@ -220,7 +213,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             {/* Overlay Controls */}
             <div className="absolute bottom-4 right-4 flex gap-2">
                 <button
-                    className="bg-app-surface p-2 rounded shadow text-app-text-muted hover:text-app-text border border-app-border"
+                    className={TOOL_BUTTON_SECONDARY}
                     onClick={() => setTransform({ x: 0, y: 0, scale: 1 })}
                     title="Reset View"
                 >

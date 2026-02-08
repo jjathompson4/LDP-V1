@@ -12,6 +12,7 @@ import {
     Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { TOOL_CARD_TITLE, TOOL_ICON_BUTTON } from '../../../styles/toolStyleTokens';
 
 ChartJS.register(
     CategoryScale,
@@ -93,12 +94,12 @@ export const HistogramDialog: React.FC<HistogramDialogProps> = ({ isOpen, onClos
     return (
         <dialog
             ref={dialogRef}
-            className="bg-app-surface text-app-text rounded-xl shadow-2xl border border-app-border p-0 backdrop:bg-black/50 w-[90vw] max-w-3xl"
+            className="bg-app-surface text-app-text rounded-2xl border border-app-primary/30 p-0 backdrop:bg-black/50 w-[90vw] max-w-3xl"
             onClose={onClose}
         >
             <div className="flex items-center justify-between p-4 border-b border-app-border">
-                <h2 className="text-lg font-semibold">Luminance Histogram</h2>
-                <button onClick={onClose} className="p-1 hover:bg-app-surface-hover rounded-lg transition-colors">
+                <h2 className={TOOL_CARD_TITLE}>Luminance Histogram</h2>
+                <button onClick={onClose} className={`p-1 ${TOOL_ICON_BUTTON}`}>
                     <X className="w-5 h-5" />
                 </button>
             </div>
