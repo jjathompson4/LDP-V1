@@ -1,11 +1,12 @@
 import matplotlib
 matplotlib.use('Agg')
-from fastapi import FastAPI, UploadFile, File, HTTPException, Body, Form
+import os
+from io import BytesIO
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 import uvicorn
-import numpy as np
 
 from .processing import (
     load_hdr_image, tone_map, false_color_image, encode_png, luminance_stats,
@@ -14,16 +15,19 @@ from .processing import (
 from .image_store import image_store
 app = FastAPI()
 
-# Configure CORS IMMEDIATELY
-origins = [
-    "https://ldp-frontend.onrender.com",
-    "http://localhost:5173",
-    "http://localhost:4173",
-]
+def get_cors_origins() -> List[str]:
+    configured = os.getenv("CORS_ORIGINS")
+    if configured:
+        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+    return [
+        "https://ldp-frontend.onrender.com",
+        "http://localhost:5173",
+        "http://localhost:4173",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -99,13 +103,9 @@ class HistogramResponse(BaseModel):
     bins: List[float]
     counts: List[int]
 
-@app.api_route("/", methods=["GET", "HEAD"])
-async def root():
-    return {"message": "LDP Backend is running"}
-
 @app.post("/upload", response_model=UploadResponse)
 async def upload_image(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(('.hdr', '.exr')):
+    if not file.filename or not file.filename.lower().endswith(('.hdr', '.exr')):
         raise HTTPException(status_code=400, detail="Invalid file type. Only .hdr and .exr are supported.")
 
     try:
@@ -229,9 +229,6 @@ async def get_histogram(sessionId: str):
         return HistogramResponse(bins=bins, counts=counts)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-from fastapi import Form
-from io import BytesIO
 
 @app.post("/download-proxy")
 async def download_proxy(filename: str = Form(...), content_type: str = Form(...), base64_data: str = Form(...)):
