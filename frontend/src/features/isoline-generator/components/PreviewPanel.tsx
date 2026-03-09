@@ -77,7 +77,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     // Add some padding
     const padding = Math.max(width, height) * 0.1;
     const vbX = minX - padding;
-    const vbY = minY - padding;
+    const vbY = -(maxY + padding);
     const vbW = width + padding * 2;
     const vbH = height + padding * 2;
 
@@ -96,8 +96,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             lines.push(
                 <line
                     key={`v${x}`}
-                    x1={x} y1={minY}
-                    x2={x} y2={maxY}
+                    x1={x} y1={-minY}
+                    x2={x} y2={-maxY}
                     className="stroke-app-text/30"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
@@ -111,8 +111,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             lines.push(
                 <line
                     key={`h${y}`}
-                    x1={minX} y1={y}
-                    x2={maxX} y2={y}
+                    x1={minX} y1={-y}
+                    x2={maxX} y2={-y}
                     className="stroke-app-text/30"
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${strokeWidth * 4} ${strokeWidth * 4}`}
@@ -159,7 +159,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                             {level.paths.map((path, pIdx) => (
                                 <polyline
                                     key={pIdx}
-                                    points={path.map(pt => pt.join(',')).join(' ')}
+                                    points={path.map(pt => `${pt[0]},${-pt[1]}`).join(' ')}
                                 />
                             ))}
                         </g>
@@ -172,7 +172,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                                 <text
                                     key={lIdx}
                                     x={label.x}
-                                    y={label.y}
+                                    y={-label.y}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
                                     stroke="var(--color-bg)"
@@ -192,7 +192,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     </g>
                     <text
                         x={width * 0.025}
-                        y={-width * 0.025}
+                        y={width * 0.025}
                         fontSize={width * 0.02}
                         className="fill-app-text"
                     >
@@ -201,9 +201,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
                     {/* Scale Bar (Bottom Left of data) */}
                     {includeScaleBar && (
-                        <g transform={`translate(${minX + width * 0.05}, ${maxY - height * 0.05})`}>
+                        <g transform={`translate(${minX + width * 0.05}, ${-(minY + height * 0.05)})`}>
                             <line x1={0} y1={0} x2={scaleBarLength} y2={0} className="stroke-app-text" strokeWidth={width * 0.004} />
-                            <text x={0} y={width * 0.02} fontSize={width * 0.02} className="fill-app-text">{scaleBarLength} {data.units}</text>
+                            <text x={0} y={-width * 0.02} fontSize={width * 0.02} className="fill-app-text">{scaleBarLength} {data.units}</text>
                         </g>
                     )}
 

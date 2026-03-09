@@ -21,7 +21,7 @@ const IsolineGeneratorPage: React.FC = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [scaleBarLength, setScaleBarLength] = useState<number>(50);
-    const [gridSize, setGridSize] = useState<number | null>(null);
+    const [gridSize, setGridSize] = useState<number | null>(10);
     const [fileName, setFileName] = useState<string>('isolines');
     const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 
